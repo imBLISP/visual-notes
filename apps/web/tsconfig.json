@@ -5,7 +5,12 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/ui/*": ["ui/*"],
+      "@/lib/*": ["lib/*"],
+    }
   },
   "include": [
     "next-env.d.ts",
