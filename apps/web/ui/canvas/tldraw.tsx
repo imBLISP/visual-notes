@@ -7,8 +7,6 @@ import {
 import React from "react";
 import {CustomArrowShapeUtil} from "@/ui/canvas/arrow";
 
-
-
 const MyCustomShapes = [CustomArrowShapeUtil];
 
 export default function TldrawCanvas() {

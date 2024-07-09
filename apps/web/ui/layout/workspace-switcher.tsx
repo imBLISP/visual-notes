@@ -1,27 +1,29 @@
-import { db } from "@/lib/drizzle";
-import {blocksTable} from "@/lib/schema";
-import { createClient } from "@/lib/supabase";
+"use client"
+
+import {blocksTable, workspacesTable} from "@/lib/schema";
+import { Popover, PopoverTrigger, PopoverContent} from "@repo/ui"
+import {cn} from "@repo/utils"
+import useWorkspaces from "@/lib/swr/use-workspaces"
 
 export async function getWorkspaces(): Promise<
   Array<{
-    id: number;
-    type: string;
+    id: string;
+    name: string;
   }>
 > {
-  return db.select().from(blocksTable);
+  return db.select().from(workspacesTable);
 }
 
-export default async function WorkspaceSwitcher() {
-  // const supabase = createClient();
-  // const { data: notes } = await supabase.from("Blocks").select();
-  // console.log(notes);
-
-  const data = await getWorkspaces();
-  console.log(data)
+export default function WorkspaceSwitcher() {
+  const { workspaces } = useWorkspaces();
+  console.log(workspaces)
 
   return (
-    <div>
-      {/* <pre>{JSON.stringify(notes, null, 2)}</pre> */}
-    </div>
+    <>
+    <Popover>
+      <PopoverTrigger>Open</PopoverTrigger>
+      <PopoverContent>Place content for the popover here.</PopoverContent>
+    </Popover>
+    </>
   );
 }

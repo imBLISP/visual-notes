@@ -12,17 +12,21 @@
     "@excalidraw/excalidraw": "^0.17.6",
     "@repo/tailwind-config": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@supabase/ssr": "^0.4.0",
     "@supabase/supabase-js": "^2.44.2",
     "@tldraw/tldraw": "^2.3.0",
     "autoprefixer": "^10.4.19",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.31.2",
+    "fs": "0.0.1-security",
     "next": "15.0.0-rc.0",
     "postcss": "^8.4.39",
     "postgres": "^3.4.4",
     "react": "19.0.0-rc-f994737d14-20240522",
-    "react-dom": "19.0.0-rc-f994737d14-20240522"
+    "react-dom": "19.0.0-rc-f994737d14-20240522",
+    "swr": "^2.2.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
