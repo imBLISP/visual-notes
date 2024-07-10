@@ -1,15 +1,11 @@
-import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
-
-const config = {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-    "../../packages/ui/src/**/*.{ts,tsx}",
-    "./ui/**/*.{ts,tsx}"
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
   prefix: "",
   theme: {
@@ -77,7 +73,5 @@ const config = {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
-} satisfies Config;
-
-export default config;
+  plugins: [require("tailwindcss-animate")],
+}

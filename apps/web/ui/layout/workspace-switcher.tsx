@@ -1,28 +1,33 @@
 "use client"
 
 import {blocksTable, workspacesTable} from "@/lib/schema";
-import { Popover, PopoverTrigger, PopoverContent} from "@repo/ui"
+import { Popover, PopoverTrigger, PopoverContent, Button, Label, Input} from "@repo/ui"
 import {cn} from "@repo/utils"
 import useWorkspaces from "@/lib/swr/use-workspaces"
 
-export async function getWorkspaces(): Promise<
-  Array<{
-    id: string;
-    name: string;
-  }>
-> {
-  return db.select().from(workspacesTable);
-}
-
 export default function WorkspaceSwitcher() {
   const { workspaces } = useWorkspaces();
-  console.log(workspaces)
+  console.log(JSON.stringify(workspaces))
 
   return (
     <>
     <Popover>
-      <PopoverTrigger>Open</PopoverTrigger>
-      <PopoverContent>Place content for the popover here.</PopoverContent>
+      <PopoverTrigger asChild>
+        <Button variant="outline">Workspaces</Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-40 flex flex-col gap-3">
+        {
+          workspaces?.map((workspace) => (
+            <Button variant="ghost" key={workspace.id} className="flex flex-row items-left gap-x-4">
+              <div className="h-6 w-6 rounded-full bg-neutral-100">
+              </div>
+              <div>
+                {workspace.name}
+              </div>
+            </Button>
+          ))
+        }
+      </PopoverContent>
     </Popover>
     </>
   );
