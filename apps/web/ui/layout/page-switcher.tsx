@@ -1,14 +1,14 @@
 "use client";
 
 import { Popover, PopoverTrigger, PopoverContent, Button } from "@repo/ui";
-import useWorkspacePages from "@/lib/swr/use-pages";
+import useWorkspacePages from "@/lib/swr/use-workspace-pages";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@repo/utils";
 
 export default function PageSwitcher() {
-  const { slug } = useParams() as { slug: string };
+  const { workspace: slug } = useParams() as { workspace: string };
 
   const { pages } = useWorkspacePages(slug);
   const searchParams = useSearchParams();
@@ -44,6 +44,8 @@ export default function PageSwitcher() {
     },
     [searchParams]
   );
+
+  console.log(JSON.stringify(pages))
 
   return (
     <>

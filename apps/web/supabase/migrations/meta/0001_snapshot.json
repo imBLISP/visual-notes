@@ -1,6 +1,6 @@
 {
-  "id": "bd2d9354-44bc-4f0b-9d2e-9a3d0706ee09",
-  "prevId": "11837391-57a7-441a-904a-1c395a776741",
+  "id": "a066b0bd-7531-4d05-b12d-08efdd74ab91",
+  "prevId": "bb67f6de-a03a-478f-bea2-18b7dde5966d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -10,19 +10,39 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "type": {
+          "name": "type",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parentId": {
+          "name": "parentId",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "blocks_parentId_workspaces_id_fk": {
+          "name": "blocks_parentId_workspaces_id_fk",
+          "tableFrom": "blocks",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "parentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

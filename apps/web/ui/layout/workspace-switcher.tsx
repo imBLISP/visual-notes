@@ -59,9 +59,6 @@ export default function WorkspaceSwitcher() {
     [domain, key, pathname, selected.id]
   );
 
-  console.log(JSON.stringify(workspaces));
-  console.log(slug, domain, key, pathname, selected.id);
-
   return (
     <>
       <Popover>
