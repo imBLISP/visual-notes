@@ -8,9 +8,6 @@ export const GET = async (
   req: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  // const pages = await db.select().from(blocksTable).where(eq(blocksTable.parentId, workspaceId));
-  console.log("here");
-  console.log(params);
   const pages = await db
     .select({
       id: blocksTable.id,
@@ -24,9 +21,8 @@ export const GET = async (
       eq(workspacesBlocksTable.blockId, blocksTable.id)
     )
     .where(eq(workspacesBlocksTable.workspaceId, params.id));
-  console.log(JSON.stringify(pages));
 
   return NextResponse.json(
-    pages.map((workspace) => BlocksSchema.parse(workspace))
+    pages.map((page) => BlocksSchema.parse(page))
   );
 };

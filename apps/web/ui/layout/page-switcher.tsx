@@ -45,8 +45,6 @@ export default function PageSwitcher() {
     [searchParams]
   );
 
-  console.log(JSON.stringify(pages))
-
   return (
     <>
       <Popover>

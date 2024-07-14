@@ -13,6 +13,7 @@ import useWorkspaces from "@/lib/swr/use-workspaces";
 import { useParams, usePathname } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function WorkspaceSwitcher() {
   const { workspaces } = useWorkspaces();
@@ -66,8 +67,9 @@ export default function WorkspaceSwitcher() {
           <Button variant="outline">{selected.name}</Button>
         </PopoverTrigger>
         <PopoverContent className="flex flex-col gap-y-4 w-40">
-          {workspaces?.map(({ id, name }) => (
-            <Link key={id}  href={href(id)}>
+          {workspaces?.map(({ id, name, logo }) => (
+            <Link key={id}  href={href(id)} className="flex flex-row gap-2 hover:bg-slate-100">
+              <Image referrerPolicy="no-referrer" alt="logo of workspace" src={logo + name} width={20} height={20} className="rounded-full"></Image>
             <div className={cn({"bg-neutral-100": selected.id == id}, "p-1 rounded-md")}>
               {name}
             </div>
