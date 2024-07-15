@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { workspaceId: string } }
 ) => {
   const pages = await db
     .select({
@@ -20,7 +20,7 @@ export const GET = async (
       workspacesBlocksTable,
       eq(workspacesBlocksTable.blockId, blocksTable.id)
     )
-    .where(eq(workspacesBlocksTable.workspaceId, params.id));
+    .where(eq(workspacesBlocksTable.workspaceId, params.workspaceId));
 
   return NextResponse.json(
     pages.map((page) => BlocksSchema.parse(page))
