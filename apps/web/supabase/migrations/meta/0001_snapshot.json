@@ -1,9 +1,65 @@
 {
-  "id": "a066b0bd-7531-4d05-b12d-08efdd74ab91",
-  "prevId": "bb67f6de-a03a-478f-bea2-18b7dde5966d",
+  "id": "8a37ae52-19d9-4b5b-913f-898ad3e91679",
+  "prevId": "e8baaccb-9951-4c29-9d60-df8aed787e56",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.blocks_blocks": {
+      "name": "blocks_blocks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "block_id": {
+          "name": "block_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "blocks_blocks_block_id_blocks_id_fk": {
+          "name": "blocks_blocks_block_id_blocks_id_fk",
+          "tableFrom": "blocks_blocks",
+          "tableTo": "blocks",
+          "columnsFrom": [
+            "block_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        },
+        "blocks_blocks_parent_id_blocks_id_fk": {
+          "name": "blocks_blocks_parent_id_blocks_id_fk",
+          "tableFrom": "blocks_blocks",
+          "tableTo": "blocks",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.blocks": {
       "name": "blocks",
       "schema": "",
@@ -12,7 +68,8 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "type": {
           "name": "type",
@@ -20,21 +77,97 @@
           "primaryKey": false,
           "notNull": true
         },
-        "parentId": {
-          "name": "parentId",
+        "properties": {
+          "name": "properties",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_id": {
+          "name": "parent_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::uuid[]"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "blocks_parentId_workspaces_id_fk": {
-          "name": "blocks_parentId_workspaces_id_fk",
+        "blocks_parent_id_workspaces_id_fk": {
+          "name": "blocks_parent_id_workspaces_id_fk",
           "tableFrom": "blocks",
           "tableTo": "workspaces",
           "columnsFrom": [
-            "parentId"
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.workspaces_blocks": {
+      "name": "workspaces_blocks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_id": {
+          "name": "block_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::uuid[]"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspaces_blocks_workspace_id_workspaces_id_fk": {
+          "name": "workspaces_blocks_workspace_id_workspaces_id_fk",
+          "tableFrom": "workspaces_blocks",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        },
+        "workspaces_blocks_block_id_blocks_id_fk": {
+          "name": "workspaces_blocks_block_id_blocks_id_fk",
+          "tableFrom": "workspaces_blocks",
+          "tableTo": "blocks",
+          "columnsFrom": [
+            "block_id"
           ],
           "columnsTo": [
             "id"
@@ -59,6 +192,12 @@
         },
         "name": {
           "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "logo": {
+          "name": "logo",
           "type": "text",
           "primaryKey": false,
           "notNull": true

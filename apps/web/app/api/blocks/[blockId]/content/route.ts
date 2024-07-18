@@ -1,13 +1,26 @@
 import { db } from "@/lib/drizzle";
-import { blocksBlocksTable, blocksTable} from "@/lib/schema";
+import { blocksTable } from "@/lib/schema";
 import { BlocksSchema } from "@/lib/zod";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { uuid } from "drizzle-orm/pg-core";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
   { params }: { params: { blockId: string } }
 ) => {
+  const contents = db
+    .select({
+      id: sql`unnest(${blocksTable.content})`.mapWith(uuid).as("id"),
+      idx: sql`generate_subscripts(${blocksTable.content}, 1)`
+        .mapWith(Number)
+        .as("idx"),
+    })
+    .from(blocksTable)
+    .where(eq(blocksTable.id, params.blockId))
+    .orderBy(({ idx }) => idx)
+    .as("contents");
+
   const blocks = await db
     .select({
       id: blocksTable.id,
@@ -15,9 +28,8 @@ export const GET = async (
       properties: blocksTable.properties,
       parentId: blocksTable.parentId,
     })
-    .from(blocksBlocksTable)
-    .innerJoin(blocksTable, eq(blocksTable.id, blocksBlocksTable.blockId))
-    .where(eq(blocksBlocksTable.parentBlockId, params.blockId));
+    .from(blocksTable)
+    .innerJoin(contents, eq(blocksTable.id, sql`contents.${contents.id}`));
 
   return NextResponse.json(
     blocks.map((block) => BlocksSchema.parse(block))

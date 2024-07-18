@@ -21,6 +21,7 @@ export default function PageSwitcher() {
     if (slug && pages && selectedPage) {
       return {
         ...selectedPage,
+        name: selectedPage.properties.title,
       };
     } else {
       return {
@@ -29,7 +30,7 @@ export default function PageSwitcher() {
         content: [],
       };
     }
-  }, [slug, pages]) as {
+  }, [slug, pages, searchParams]) as {
     id: string;
     name: string;
     content: string[];

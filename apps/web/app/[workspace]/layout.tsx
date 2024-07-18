@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./prosemirror.css";
 import WorkspaceSwitcher from "@/ui/layout/workspace-switcher";
 import UserDropdown from "@/ui/layout/user-dropdown";
 import Divider from "@/ui/icons/divider";
 import PageSwitcher from "@/ui/layout/page-switcher";
 import Share from "@/ui/layout/share";
+import {Toaster} from "@repo/ui"
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -46,6 +48,7 @@ export default function RootLayout({
         <div className="h-[calc(100dvh-64px)] w-screen">
           {children}
         </div>
+        <Toaster/>
       </body>
     </html>
   );

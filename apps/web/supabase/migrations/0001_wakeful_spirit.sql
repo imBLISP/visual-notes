@@ -1,0 +1,1 @@
+ALTER TABLE "workspaces_blocks" ADD COLUMN "content" uuid[] DEFAULT ARRAY[]::uuid[] NOT NULL;

@@ -1,6 +1,6 @@
 {
-  "id": "6b542d83-7dd7-4d62-a304-c0d1df2f27ae",
-  "prevId": "cfee19a0-5f4f-4bff-94ee-cdc41cba8c9c",
+  "id": "912545e7-1117-4405-a755-9461e57d1e5b",
+  "prevId": "00456204-1acb-4a32-bde1-01ee686e804b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -15,14 +15,14 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "blockId": {
-          "name": "blockId",
+        "block_id": {
+          "name": "block_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "parentId": {
-          "name": "parentId",
+        "parent_id": {
+          "name": "parent_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -30,12 +30,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "blocks_blocks_blockId_blocks_id_fk": {
-          "name": "blocks_blocks_blockId_blocks_id_fk",
+        "blocks_blocks_block_id_blocks_id_fk": {
+          "name": "blocks_blocks_block_id_blocks_id_fk",
           "tableFrom": "blocks_blocks",
           "tableTo": "blocks",
           "columnsFrom": [
-            "blockId"
+            "block_id"
           ],
           "columnsTo": [
             "id"
@@ -43,12 +43,12 @@
           "onDelete": "no action",
           "onUpdate": "cascade"
         },
-        "blocks_blocks_parentId_blocks_id_fk": {
-          "name": "blocks_blocks_parentId_blocks_id_fk",
+        "blocks_blocks_parent_id_blocks_id_fk": {
+          "name": "blocks_blocks_parent_id_blocks_id_fk",
           "tableFrom": "blocks_blocks",
           "tableTo": "blocks",
           "columnsFrom": [
-            "parentId"
+            "parent_id"
           ],
           "columnsTo": [
             "id"
@@ -83,21 +83,28 @@
           "primaryKey": false,
           "notNull": false
         },
-        "parentId": {
-          "name": "parentId",
+        "parent_id": {
+          "name": "parent_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::uuid[]"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "blocks_parentId_workspaces_id_fk": {
-          "name": "blocks_parentId_workspaces_id_fk",
+        "blocks_parent_id_workspaces_id_fk": {
+          "name": "blocks_parent_id_workspaces_id_fk",
           "tableFrom": "blocks",
           "tableTo": "workspaces",
           "columnsFrom": [
-            "parentId"
+            "parent_id"
           ],
           "columnsTo": [
             "id"
@@ -120,27 +127,34 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "workspaceId": {
-          "name": "workspaceId",
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "blockId": {
-          "name": "blockId",
+        "block_id": {
+          "name": "block_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::uuid[]"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "workspaces_blocks_workspaceId_workspaces_id_fk": {
-          "name": "workspaces_blocks_workspaceId_workspaces_id_fk",
+        "workspaces_blocks_workspace_id_workspaces_id_fk": {
+          "name": "workspaces_blocks_workspace_id_workspaces_id_fk",
           "tableFrom": "workspaces_blocks",
           "tableTo": "workspaces",
           "columnsFrom": [
-            "workspaceId"
+            "workspace_id"
           ],
           "columnsTo": [
             "id"
@@ -148,12 +162,12 @@
           "onDelete": "no action",
           "onUpdate": "cascade"
         },
-        "workspaces_blocks_blockId_blocks_id_fk": {
-          "name": "workspaces_blocks_blockId_blocks_id_fk",
+        "workspaces_blocks_block_id_blocks_id_fk": {
+          "name": "workspaces_blocks_block_id_blocks_id_fk",
           "tableFrom": "workspaces_blocks",
           "tableTo": "blocks",
           "columnsFrom": [
-            "blockId"
+            "block_id"
           ],
           "columnsTo": [
             "id"
