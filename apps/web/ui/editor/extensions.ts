@@ -12,8 +12,6 @@ import {
 import { UploadImagesPlugin } from "novel/plugins";
 
 import { cx } from "class-variance-authority";
-import GlobalDragHandle from 'tiptap-extension-global-drag-handle'
-import AutoJoiner from 'tiptap-extension-auto-joiner' // optional
 
 const aiHighlight = AIHighlight;
 const placeholder = Placeholder;
@@ -116,6 +114,4 @@ export const defaultExtensions = [
   taskItem,
   horizontalRule,
   aiHighlight,
-  GlobalDragHandle,
-  AutoJoiner, // optional
 ];

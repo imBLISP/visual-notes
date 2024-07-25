@@ -1,14 +1,16 @@
 import z from "@/lib/zod"
 
 export const BlocksSchema = z.object({
-    id: z.string().describe("The unique ID of the block."),
+    id: z.string().uuid().describe("The unique ID of the block."),
     type: z.string().describe("The type of the block."),
     properties: z.object({
         text: z.string().optional().describe("The text content of the block."),
         title: z.string().optional().describe("The title of the block."),
         x: z.number().optional().describe("The x coordinate of the block."),
         y: z.number().optional().describe("The y coordinate of the block."),
-        meta: z.object({}).optional().describe("The meta data of the block."),
+        meta: z.object({
+            id: z.string().uuid()
+        }).optional().describe("The meta data of the block."),
         type: z.string().optional().describe("The type of the block."),
         index: z.string().optional().describe("The index of the block."),
         props: z.object({
@@ -22,5 +24,23 @@ export const BlocksSchema = z.object({
         rotation: z.number().optional().describe("The rotation of the block."),
         typeName: z.string().optional().describe("The type name of the block."),
     }).describe("The properties of the block."),
-    parentId: z.string().optional().describe("The ID of the parent block.")
+    parentId: z.string().uuid().describe("The ID of the parent block."),
+    after: z.string().uuid().optional().describe("The ID of the block after."),
+})
+
+export const BlockOperationSchema = z.object({
+    args: BlocksSchema,
+    path: z.array(z.string()).describe("The path of the block."),
+    command: z.union([z.literal("update"), z.literal("set"), z.literal("listAfter"), z.literal("listRemove"), z.literal("listBefore")]).describe("The command of the block."),
+    pointer: z.object({
+        id: z.string().uuid().describe("The ID of the block."),
+        table: z.string().describe("The table of the block."),
+        workspaceId: z.string().uuid().optional().describe("The ID of the workspace.")
+    })
+})
+
+export const BlockTransactionSchema = z.object({
+    operations: z.array(BlockOperationSchema)
+    // block: BlocksSchema,
+    // type: z.union([z.literal("update"), z.literal("delete"), z.literal("set"), z.literal("listAfter"), z.literal("listRemove")])
 })

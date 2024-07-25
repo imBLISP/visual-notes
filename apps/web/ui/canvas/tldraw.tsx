@@ -12,8 +12,10 @@ import {
   TLEditorComponents,
   track,
   DefaultSizeStyle,
+  TLEventMapHandler,
+  Editor
 } from "@tldraw/tldraw";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { CustomArrowShapeUtil } from "@/ui/canvas/arrow";
 import { useParams, useSearchParams } from "next/navigation";
 import useBlockContent from "@/lib/swr/use-block-content";
@@ -31,44 +33,60 @@ import {
   SheetTrigger,
   ScrollArea
 } from "@repo/ui";
-import Editor from "@/ui/editor/editor"
+import NoteEditor from "@/ui/editor/advanced-editor"
+import useBlocksStore from "@/lib/zustand/transactionQueue";
+import _ from "lodash"
+import {v4 as uuidv4, validate as validateUuid} from "uuid";
+import createBlock from "@/lib/transactions/create-block"
+import {Block} from "@/lib/types"
 
 const MyCustomShapes = [CustomArrowShapeUtil];
 
-function InsideOfContext() {
-  // const editor = useEditor()
-  // const {document, session} = getSnapshot(editor.store)
-  // // console.log(`doc: ${JSON.stringify(document, null, 2)}`)
-  // // console.log(`session: ${JSON.stringify(session, null, 2)}`)
-  // // your editor code here
-  // return null // or whatever
-  const searchParams = useSearchParams();
-  const { blocks } = useBlockContent(searchParams.get("page") ?? "");
-  let shapes: Array<TLShapePartial> = [];
-  blocks?.map((block) => {
-    if (block.type == "tlshape") {
-      block.properties.id = createShapeId(block.id);
-      shapes.push(block.properties);
-    }
-  });
+// function BlocksState() {
+//   // const editor = useEditor()
+//   // const {document, session} = getSnapshot(editor.store)
+//   // // console.log(`doc: ${JSON.stringify(document, null, 2)}`)
+//   // // console.log(`session: ${JSON.stringify(session, null, 2)}`)
+//   // // your editor code here
+//   // return null // or whatever
+//   const {addBlock, blocks: storeBlocks} = useBlocksStore();
+//   const searchParams = useSearchParams();
+//   const { blocks } = useBlockContent(searchParams.get("page") ?? "");
+//   let shapes: Array<TLShapePartial> = [];
+//   blocks?.map((block) => {
+//     if (block.type == "tlshape") {
+//       block.properties.id = createShapeId(block.id);
+//       shapes.push(block.properties);
+//     }
+//   });
 
-  console.log(`shapes: ${JSON.stringify(shapes, null, 2)}`);
-
-  const editor = useEditor();
-  if (blocks) {
-    editor.createShapes(shapes);
-  }
-  const unlisten = editor.store.listen(
-    (update) => {
-      localStorage.setItem(
-        "my-editor-snapshot",
-        JSON.stringify(getSnapshot(editor.store))
-      );
-    },
-    { scope: "document", source: "user" }
-  );
-  return null;
-}
+//   const editor = useEditor();
+//   if (blocks) {
+//     editor.createShapes(shapes);
+//   }
+//   // const unlisten = editor.store.listen(
+//   //   (update) => {
+//   //     const added = update.changes.added;
+//   //     const updated = update.changes.updated;
+//   //     const removed = update.changes.removed;
+//   //     if (Object.keys(added).length > 0) {
+//   //       console.log("storeBlocks initial", storeBlocks);
+//   //       console.log("added", added);
+//   //       for (const [key, value] of Object.entries(added)) {
+//   //         addBlock({
+//   //           id: value.id,
+//   //           type: "tlshape",
+//   //           properties: value,
+//   //           parentId: searchParams.get("page") ?? "",
+//   //         });
+//   //       }
+//   //       console.log(storeBlocks);
+//   //     }
+//   //   },
+//   //   { scope: "document", source: "user" }
+//   // );
+//   return null;
+// }
 
 const ContextToolbarComponent = track(() => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -97,12 +115,7 @@ const ContextToolbarComponent = track(() => {
   } else {
     selectionRotatedPageBounds = editor.getSelectionRotatedPageBounds();
   }
-
   if (!selectionRotatedPageBounds) return null;
-  console.log(`hoveredShape: ${JSON.stringify(hoveredShape, null, 2)}`);
-  console.log(
-    `selectionRotatedPageBounds: ${JSON.stringify(selectionRotatedPageBounds, null, 2)}`
-  );
 
   // [2]
   let size;
@@ -111,20 +124,13 @@ const ContextToolbarComponent = track(() => {
   } else {
     size = editor.getSharedStyles().get(DefaultSizeStyle);
   }
-  // const size = editor.getShapeStyleIfExists(hoveredShape, DefaultSizeStyle)
-  // const size = editor.getSharedStyles().get(DefaultSizeStyle)
-  console.log(`size: ${JSON.stringify(size, null, 2)}`);
   if (!size) return null;
-  // const currentSize = size.type === 'shared' ? size.value : undefined
+
   const currentSize = size;
 
   const pageCoordinates = editor.pageToViewport(
     selectionRotatedPageBounds.point
   );
-
-  const OpenNoteClicked = () => {
-    console.log("Open note clicked");
-  };
 
   return (
     <div
@@ -157,46 +163,17 @@ const ContextToolbarComponent = track(() => {
           }}
         >
           <Sheet onOpenChange={(open) => setModalOpen(open)} modal={false}>
-            {/* <SheetOverlay className=""></SheetOverlay> */}
             <SheetTrigger>
               <Button>Open note</Button>
             </SheetTrigger>
             <SheetPortal>
               <SheetContent className="sm:max-w-[800px]">
                 <ScrollArea className="w-full h-full">
-                <Editor onChange={(change) => {console.log(change)}}></Editor>
-                {/* <SheetHeader>
-                  <SheetTitle>Are you absolutely sure?</SheetTitle>
-                  <SheetDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account and remove your data from our servers.
-                  </SheetDescription>
-                </SheetHeader>
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </SheetClose>
-                </SheetFooter> */}
+                  <NoteEditor initialValue={{}} onChange={() => console.log("changed")} />
                 </ScrollArea>
               </SheetContent>
             </SheetPortal>
           </Sheet>
-          {/* <Button onClick={() => OpenNoteClicked()}>
-            Open note
-          </Button> */}
-          {/* <div
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									height: 32,
-									width: 32,
-									background:'transparent',
-								}}
-								onClick={() => console.log("button clicked")}
-							>
-                Open note
-							</div> */}
         </div>
       </div>
     </div>
@@ -208,8 +185,138 @@ const components: TLEditorComponents = {
 };
 
 export default function TldrawCanvas() {
-  const [store] = useState(() => {
-    // const stringified = localStorage.getItem('my-editor-snapshot')
+  console.log("TLDrawCanvas updated..")
+  const searchParams = useSearchParams();
+  const pageId = searchParams.get("page");
+	const [editor, setEditor] = useState<Editor>()
+	const setAppToState = useCallback((editor: Editor) => {
+		setEditor(editor)
+	}, [])
+  const { blocks } = useBlockContent(pageId ?? "");
+  console.log('blocks', blocks)
+	// const [storeEvents, setStoreEvents] = useState<string[]>([])
+  const {enqueueTransaction} = useBlocksStore()
+
+  useEffect(() => {
+    if (editor) {
+      let shapes: Array<TLShapePartial> = [];
+
+      blocks?.map((block) => {
+        if (block.type == "tlshape") {
+          shapes.push(block.properties);
+        }
+      });
+
+      console.log('initializing Shapes...', shapes)
+
+      editor.createShapes(shapes);
+    }
+  }, [editor, blocks])
+
+  function logChangeEvent(eventName: string) {
+    // setStoreEvents((events) => [...events, eventName])
+    console.log('event', eventName)
+  }
+
+	useEffect(() => {
+		if (!editor) return
+    console.log('editor changed')
+
+    editor.sideEffects.registerBeforeCreateHandler('shape', (shape, source) => {
+      // remove 'shape' from shape.id
+      console.log('before create shape', shape)
+      if (shape.meta.id) {
+        console.log('shape id already has a uuid', shape.id)
+        return shape
+      }
+      else {
+        return {...shape, meta: {id: uuidv4()}}
+      }
+    })
+
+		//[1]
+		const handleChangeEvent: TLEventMapHandler<'change'> = (change) => {
+			// Added
+			for (const record of Object.values(change.changes.added)) {
+				if (record.typeName === 'shape') {
+					logChangeEvent(`created shape (${record.type})\n`)
+          let alreadyExists = false;
+
+          for (let b of blocks || []) {
+            console.log('block id', b.id)
+            console.log('record id', record.meta.id)
+            if (b.id == record.meta.id) {
+              alreadyExists = true;
+            }
+          }
+
+          if (!alreadyExists) {
+            console.log('creating block', record )
+            const block: Block = {
+              id: record.meta.id,
+              type: "tlshape",
+              properties: record,
+              parentId: searchParams.get("page") ?? "",
+            }
+            const pageId = searchParams.get("page") ?? "";
+            const transaction = createBlock( block, pageId);
+
+            enqueueTransaction(transaction);
+          }
+				}
+			}
+
+			// Updated
+			for (const [from, to] of Object.values(change.changes.updated)) {
+        if (from.typeName === 'shape') {
+          // updateBlockProperties({id: record.meta.id, type: "tlshape", properties: record, parentId: searchParams.get("page") ?? "", alive: true});
+        }
+				// if (
+				// 	from.typeName === 'instance' &&
+				// 	to.typeName === 'instance' &&
+				// 	from.currentPageId !== to.currentPageId
+				// ) {
+				// 	logChangeEvent(`changed page (${from.currentPageId}, ${to.currentPageId})`)
+				// } else if (from.id.startsWith('shape') && to.id.startsWith('shape')) {
+				// 	let diff = _.reduce(
+				// 		from,
+				// 		(result: any[], value, key: string) =>
+				// 			_.isEqual(value, (to as any)[key]) ? result : result.concat([key, (to as any)[key]]),
+				// 		[]
+				// 	)
+				// 	if (diff?.[0] === 'props') {
+				// 		diff = _.reduce(
+				// 			(from as any).props,
+				// 			(result: any[], value, key) =>
+				// 				_.isEqual(value, (to as any).props[key])
+				// 					? result
+				// 					: result.concat([key, (to as any).props[key]]),
+				// 			[]
+				// 		)
+				// 	}
+				// 	logChangeEvent(`updated shape (${JSON.stringify(diff)})\n`)
+				// }
+			}
+
+			// Removed
+			for (const record of Object.values(change.changes.removed)) {
+				if (record.typeName === 'shape') {
+					// logChangeEvent(`deleted shape (${record.type})\n`)
+          // unaliveBlock({id: record.meta.id, type: "tlshape", properties: record, parentId: searchParams.get("page") ?? "", alive: false});
+				}
+			}
+		}
+
+		// [2]
+		const cleanupFunction = editor.store.listen(handleChangeEvent, { source: 'user', scope: 'all' })
+
+		return () => {
+			cleanupFunction()
+		}
+	}, [editor, enqueueTransaction, blocks])
+
+
+  const [store, setStore] = useState(() => {
     const stringified = null;
     if (!stringified) {
       return createTLStore({
@@ -223,7 +330,6 @@ export default function TldrawCanvas() {
     });
 
     // Get the snapshot
-    // console.log(`stringified: ${stringified}`)
     if (!stringified) {
       return newStore;
     }
@@ -234,6 +340,12 @@ export default function TldrawCanvas() {
     return newStore;
   });
 
+  // useEffect(() => {
+  //   setStore(createTLStore({
+  //       shapeUtils: [...defaultShapeUtils, ...MyCustomShapes],
+  //   }));
+  // }, [pageId])
+
   return (
     <div className="h-full w-full">
       <Tldraw
@@ -243,9 +355,18 @@ export default function TldrawCanvas() {
         // }}
         store={store}
         components={components}
+        onMount={setAppToState}
       >
-        <InsideOfContext />
+        {/* <BlocksState /> */}
       </Tldraw>
     </div>
   );
 }
+
+function getBlockIdFromShapeId(shapeId: string): string {
+  const blockId = shapeId.split('shape:')[1]
+  return blockId || ""
+}
+
+function initShapes(editor: Editor) {
+};
