@@ -7,7 +7,18 @@ import UserDropdown from "@/ui/layout/user-dropdown";
 import Divider from "@/ui/icons/divider";
 import PageSwitcher from "@/ui/layout/page-switcher";
 import Share from "@/ui/layout/share";
-import {Toaster} from "@repo/ui"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  Toaster,
+  Skeleton
+} from "@repo/ui";
+import Providers from "./providers";
+import {Slash} from "lucide-react";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -28,27 +39,49 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <div className="px-10 w-full z-10 top-0 h-16 border-b border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center">
-          <div className="flex flex-row items-center">
-            <div>website icon</div>
-            <Divider className="ml-1"/>
-            <WorkspaceSwitcher/>
-            <Divider className="ml-1"/>
-            <PageSwitcher/>
+        <Providers>
+          <div className="px-5 w-full z-10 top-0 h-16 border-b border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                <Skeleton className="w-20 h-8 flex items-center justify-center">App name</Skeleton>
+                  {/* <BreadcrumbLink href="/">Home</BreadcrumbLink> */}
+                </BreadcrumbItem>
+                <BreadcrumbSeparator>
+                <Slash/>
+                </BreadcrumbSeparator>
+                <BreadcrumbItem>
+                  <WorkspaceSwitcher />
+                  {/* <BreadcrumbLink href="/components">Components</BreadcrumbLink> */}
+                </BreadcrumbItem>
+                <BreadcrumbSeparator>
+                <Slash/>
+                </BreadcrumbSeparator>
+                <BreadcrumbItem>
+                  <PageSwitcher />
+                  {/* <BreadcrumbPage>Breadcrumb</BreadcrumbPage> */}
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            {/* < */}
+            {/* <div className="flex flex-row items-center">
+              <div>website icon</div>
+              <Divider className="ml-1" />
+              <WorkspaceSwitcher />
+              <Divider className="ml-1" />
+              <PageSwitcher />
+            </div> */}
+            <div className="flex flex-row items-center justify-end">
+              <Share className="mr-2" />
+              <UserDropdown />
+            </div>
           </div>
-          <div className="flex flex-row items-center justify-end">
-            <Share className="mr-2"/>
-            <UserDropdown/>
-          </div>
-        </div>
-        <div className="h-[calc(100dvh-64px)] w-screen">
-          {children}
-        </div>
-        <Toaster/>
+          <div className="h-[calc(100dvh-64px)] w-screen">{children}</div>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

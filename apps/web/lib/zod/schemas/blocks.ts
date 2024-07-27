@@ -1,8 +1,8 @@
 import z from "@/lib/zod"
 
 export const BlocksSchema = z.object({
-    id: z.string().uuid().describe("The unique ID of the block."),
-    type: z.string().describe("The type of the block."),
+    id: z.string().uuid().optional().describe("The unique ID of the block."),
+    type: z.string().optional().describe("The type of the block."),
     properties: z.object({
         text: z.string().optional().describe("The text content of the block."),
         title: z.string().optional().describe("The title of the block."),
@@ -23,8 +23,8 @@ export const BlocksSchema = z.object({
         parentId: z.string().optional().describe("The ID of the parent block."),
         rotation: z.number().optional().describe("The rotation of the block."),
         typeName: z.string().optional().describe("The type name of the block."),
-    }).describe("The properties of the block."),
-    parentId: z.string().uuid().describe("The ID of the parent block."),
+    }).optional().describe("The properties of the block."),
+    parentId: z.string().uuid().optional().describe("The ID of the parent block."),
     after: z.string().uuid().optional().describe("The ID of the block after."),
 })
 

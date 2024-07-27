@@ -7,6 +7,7 @@ import {
   Button,
   Label,
   Input,
+  Badge,
 } from "@repo/ui";
 import { cn } from "@repo/utils";
 import useWorkspaces from "@/lib/swr/use-workspaces";
@@ -14,21 +15,30 @@ import { useParams, usePathname } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import {ChevronsUpDown} from "lucide-react"
+import {Sortable} from "@/ui/dndkit/sortable";
+import {restrictToVerticalAxis, restrictToParentElement} from "@dnd-kit/modifiers";
 
 export default function WorkspaceSwitcher() {
   const { workspaces } = useWorkspaces();
   const pathname = usePathname();
-  const { slug, key, domain } = useParams() as {
-    slug?: string;
+  const {
+    workspace: workspaceId,
+    key,
+    domain,
+  } = useParams() as {
+    workspace?: string;
     key?: string;
     domain?: string;
   };
 
   const selected = useMemo(() => {
     const selectedWorkspace = workspaces?.find(
-      (workspace) => workspace.id == slug
+      (workspace) => workspace.id == workspaceId
     );
-    if (slug && workspaces && selectedWorkspace) {
+    console.log("workspaceId", workspaceId);
+
+    if (workspaceId && workspaces && selectedWorkspace) {
       return {
         ...selectedWorkspace,
       };
@@ -38,12 +48,14 @@ export default function WorkspaceSwitcher() {
       return {
         id: "account_name_id",
         name: "account_name_workspce",
+        logo: "https://api.dicebear.com/7.x/initials/svg?backgroundType=gradientLinear&fontFamily=Helvetica&fontSize=40&seed=",
         content: [],
       };
     }
-  }, [slug, workspaces]) as {
+  }, [workspaceId, workspaces]) as {
     id: string;
     name: string;
+    logo: string;
     content: string[];
   };
 
@@ -64,17 +76,55 @@ export default function WorkspaceSwitcher() {
     <>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline">{selected.name}</Button>
+          <Button variant="ghost" className="items-center h-8 pr-2">
+              <Image
+                referrerPolicy="no-referrer"
+                alt="logo of workspace"
+                src={selected.logo + selected.name}
+                width={20}
+                height={20}
+                className="rounded-sm"
+              ></Image>
+            <div className="ml-3">{selected.name}</div>
+            {/* <Badge variant="outline" className="ml-3">Free</Badge> */}
+            <ChevronsUpDown size={15} className="ml-3"/>
+          </Button>
         </PopoverTrigger>
-        <PopoverContent className="flex flex-col gap-y-4 w-40">
-          {workspaces?.map(({ id, name, logo }) => (
-            <Link key={id}  href={href(id)} className="flex flex-row gap-2 hover:bg-slate-100">
-              <Image referrerPolicy="no-referrer" alt="logo of workspace" src={logo + name} width={20} height={20} className="rounded-full"></Image>
-            <div className={cn({"bg-neutral-100": selected.id == id}, "p-1 rounded-md")}>
-              {name}
-            </div>
+        <PopoverContent align={"start"} className="flex flex-col gap-y-4 w-72">
+  {/* <div
+    style={{
+      height: '50vh',
+      width: 350,
+      margin: '200px auto 0',
+      overflow: 'auto',
+    }}
+  > */}
+          <Sortable items={["abc", "def", 'hgh']} modifiers={[restrictToVerticalAxis, restrictToParentElement]} removable handle></Sortable>
+  {/* </div> */}
+          {/* {workspaces?.map(({ id, name, logo }) => (
+            <Link
+              key={id}
+              href={href(id)}
+              className="flex flex-row gap-2 hover:bg-slate-100"
+            >
+              <Image
+                referrerPolicy="no-referrer"
+                alt="logo of workspace"
+                src={logo + name}
+                width={20}
+                height={20}
+                className="rounded-full"
+              ></Image>
+              <div
+                className={cn(
+                  { "bg-neutral-100": selected.id == id },
+                  "p-1 rounded-md"
+                )}
+              >
+                {name}
+              </div>
             </Link>
-        ))}
+          ))} */}
         </PopoverContent>
       </Popover>
     </>
