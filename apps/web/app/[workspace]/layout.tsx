@@ -4,6 +4,7 @@ import "./globals.css";
 import "./prosemirror.css";
 import WorkspaceSwitcher from "@/ui/layout/workspace-switcher";
 import UserDropdown from "@/ui/layout/user-dropdown";
+import Settings from "@/ui/layout/settings";
 import Divider from "@/ui/icons/divider";
 import PageSwitcher from "@/ui/layout/page-switcher";
 import Share from "@/ui/layout/share";
@@ -47,18 +48,18 @@ export default function RootLayout({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                <Skeleton className="w-20 h-8 flex items-center justify-center">App name</Skeleton>
+                <Skeleton className="w-20 h-8 flex items-center justify-center mr-2">App name</Skeleton>
                   {/* <BreadcrumbLink href="/">Home</BreadcrumbLink> */}
                 </BreadcrumbItem>
                 <BreadcrumbSeparator>
-                <Slash/>
+                {/* <Slash className="text-stone-400"/> */}
                 </BreadcrumbSeparator>
                 <BreadcrumbItem>
                   <WorkspaceSwitcher />
                   {/* <BreadcrumbLink href="/components">Components</BreadcrumbLink> */}
                 </BreadcrumbItem>
                 <BreadcrumbSeparator>
-                <Slash/>
+                {/* <Slash className="text-stone-400"/> */}
                 </BreadcrumbSeparator>
                 <BreadcrumbItem>
                   <PageSwitcher />
@@ -75,6 +76,7 @@ export default function RootLayout({
               <PageSwitcher />
             </div> */}
             <div className="flex flex-row items-center justify-end">
+              <Settings/>
               <Share className="mr-2" />
               <UserDropdown />
             </div>

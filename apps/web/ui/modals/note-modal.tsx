@@ -19,6 +19,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { Page } from "@/ui/editor/dndEditor/editor";
+import {Layout} from "@/ui/editor/dndEditor/block";
 
 const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -53,31 +55,15 @@ function NoteModal({
             e.preventDefault();
         }}
       >
-        <SheetHeader>
-          <SheetTitle>Edit profile</SheetTitle>
-          <SheetDescription>
-            Make changes to your profile here. Click save when you're done.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" value="Pedro Duarte" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input id="username" value="@peduarte" className="col-span-3" />
-          </div>
-        </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button>Save changes</Button>
-          </SheetClose>
-        </SheetFooter>
+        <Page layout={Layout.Vertical} pageBlock={{
+          id: 'test_id',
+          type: "page",
+          parentId: 'test_parent_id',
+          properties: {
+            title: 'page_title',
+          },
+          content: [] 
+        }}></Page>
       </SheetContent>
     </Sheet>
   );

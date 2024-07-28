@@ -1,15 +1,14 @@
-import {TLRecord, TLShapePartial} from "@tldraw/tldraw"
+import { TLRecord, TLShapePartial } from "@tldraw/tldraw";
 
 export interface Workspace {
-    id: string;
-    name: string;
-    content: string[];
-    slug: string;
-    logo: string;
+  id: string;
+  name: string;
+  content: string[];
+  logo: string;
 }
 
 export interface PageProperties {
-    title?: string;
+  title?: string;
 }
 
 // export type BlockProps =
@@ -18,7 +17,7 @@ export interface PageProperties {
 // }
 
 // export interface BlockProps {
-//     id: string, 
+//     id: string,
 //     type: string,
 //     properties: {
 //         ...PagePropertiesProps,
@@ -27,16 +26,28 @@ export interface PageProperties {
 //     parentId: string
 // }
 
-export type Block = 
-    | { id: string; type: 'tlshape'; properties: TLShapePartial; parentId: string; }
-    | { id: string; type: 'page'; properties: PageProperties; parentId: string; };
+export type Block =
+  | {
+      id: string;
+      type: "tlshape";
+      properties: TLShapePartial;
+      parentId: string;
+      content: string[];
+    }
+  | {
+      id: string;
+      type: "page";
+      properties: PageProperties;
+      parentId: string;
+      content: string[];
+    };
 
 export interface Pages {
-    id: string;
-    type: string;
-    properties: PageProperties;
-    content: string[];
-    parent: string;
+  id: string;
+  type: string;
+  properties: PageProperties;
+  content: string[];
+  parent: string;
 }
 
 export interface BlockOperation {
@@ -47,9 +58,9 @@ export interface BlockOperation {
     id: string;
     table: string;
     workspaceId?: string;
-  }
+  };
 }
 
 export interface BlockTransaction {
-    operations: BlockOperation[];
+  operations: BlockOperation[];
 }
