@@ -32,11 +32,12 @@ const Editor = ({ initialValue, onChange }: EditorProp) => {
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openLink, setOpenLink] = useState(false);
+  // convert changes from novel format to 
 
   return (
     <EditorRoot>
       <EditorContent
-        // className="border p-4 rounded-xl"
+        className="p-4 rounded-xl"
         {...(initialValue && { initialContent: initialValue })}
         extensions={extensions}
         editorProps={{

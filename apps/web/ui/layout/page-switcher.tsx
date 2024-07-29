@@ -1,6 +1,6 @@
 "use client";
 
-import { Popover, PopoverTrigger, PopoverContent, Button } from "@repo/ui";
+import { Popover, PopoverTrigger, PopoverContent, Button, Badge } from "@repo/ui";
 import useWorkspacePages from "@/lib/swr/use-workspace-pages";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
@@ -50,7 +50,11 @@ export default function PageSwitcher() {
     <>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline">{selected.name}</Button>
+          <Button variant="ghost">
+            <div>
+              {selected.name}
+            </div>
+          </Button>
         </PopoverTrigger>
         <PopoverContent className="flex flex-col gap-y-4 w-40">
           {pages?.map(({ id, properties }) => (

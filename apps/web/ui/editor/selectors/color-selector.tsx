@@ -5,8 +5,8 @@ import {
   PopoverTrigger,
   Popover,
   PopoverContent,
-  Button
 } from "@repo/ui";
+import { Button } from "@repo/ui";
 
 export interface BubbleColorMenuItem {
   name: string;

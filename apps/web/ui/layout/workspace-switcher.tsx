@@ -1,34 +1,35 @@
 "use client";
 
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Button,
-  Label,
-  Input,
-} from "@repo/ui";
-import { cn } from "@repo/utils";
+import { Popover, PopoverTrigger, PopoverContent, Button } from "@repo/ui";
 import useWorkspaces from "@/lib/swr/use-workspaces";
-import { useParams, usePathname } from "next/navigation";
-import { useCallback, useMemo } from "react";
-import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useContext, useMemo, useState } from "react";
 import Image from "next/image";
+import { ChevronsUpDown, ChevronsDown } from "lucide-react";
+import { WorkspaceList } from "../dndkit/workspace/workspace-list-dnd";
+import { ModalContext } from "@/ui/modals/provider";
 
 export default function WorkspaceSwitcher() {
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const {setShowAddWorkspaceModal} = useContext(ModalContext);
   const { workspaces } = useWorkspaces();
-  const pathname = usePathname();
-  const { slug, key, domain } = useParams() as {
-    slug?: string;
+  const {
+    workspace: workspaceId,
+    key,
+    domain,
+  } = useParams() as {
+    workspace?: string;
     key?: string;
     domain?: string;
   };
 
   const selected = useMemo(() => {
     const selectedWorkspace = workspaces?.find(
-      (workspace) => workspace.id == slug
+      (workspace) => workspace.id == workspaceId
     );
-    if (slug && workspaces && selectedWorkspace) {
+    console.log("workspaceId", workspaceId);
+
+    if (workspaceId && workspaces && selectedWorkspace) {
       return {
         ...selectedWorkspace,
       };
@@ -38,43 +39,55 @@ export default function WorkspaceSwitcher() {
       return {
         id: "account_name_id",
         name: "account_name_workspce",
+        logo: "https://api.dicebear.com/7.x/initials/svg?backgroundType=gradientLinear&fontFamily=Helvetica&fontSize=40&seed=",
         content: [],
       };
     }
-  }, [slug, workspaces]) as {
+  }, [workspaceId, workspaces]) as {
     id: string;
     name: string;
+    logo: string;
     content: string[];
   };
 
-  const href = useCallback(
-    (id: string) => {
-      if (domain || key || selected.id === "account_name_id") {
-        // if we're on a link page, navigate back to the workspace root
-        return `/${id}`;
-      } else {
-        // else, we keep the path but remove all query params
-        return pathname?.replace(selected.id, id).split("?")[0] || "/";
-      }
-    },
-    [domain, key, pathname, selected.id]
-  );
-
   return (
     <>
-      <Popover>
+      <Popover onOpenChange={(open) => {setSwitcherOpen(open)}}>
         <PopoverTrigger asChild>
-          <Button variant="outline">{selected.name}</Button>
+          <Button variant="ghost" className="items-center h-8 pr-2">
+            <Image
+              referrerPolicy="no-referrer"
+              alt="logo of workspace"
+              src={selected.logo + selected.name}
+              width={20}
+              height={20}
+              className="rounded-sm"
+            ></Image>
+            <div className="ml-3">{selected.name}</div>
+            {/* <Badge variant="outline" className="ml-3">Free</Badge> */}
+            {switcherOpen ? <ChevronsDown size={15} className="ml-3" /> : <ChevronsUpDown size={15} className="ml-3" />}
+          </Button>
         </PopoverTrigger>
-        <PopoverContent className="flex flex-col gap-y-4 w-40">
-          {workspaces?.map(({ id, name, logo }) => (
-            <Link key={id}  href={href(id)} className="flex flex-row gap-2 hover:bg-slate-100">
-              <Image referrerPolicy="no-referrer" alt="logo of workspace" src={logo + name} width={20} height={20} className="rounded-full"></Image>
-            <div className={cn({"bg-neutral-100": selected.id == id}, "p-1 rounded-md")}>
-              {name}
+        <PopoverContent
+          align={"start"}
+          sideOffset={25}
+          className="flex flex-col gap-y-2 w-72 pt-2 pb-0 px-0 shadow-xl rounded-lg"
+        >
+          <div className="flex justify-between">
+            <div className="ml-3 text-sm text-neutral-500 font-normal">
+              Workspaces
             </div>
-            </Link>
-        ))}
+          </div>
+          <WorkspaceList initialWorkspaces={workspaces || []} selectedWorkspace={selected} />
+          <div className="border-t flex justify-center bg-[#f7f7f5] pb-2">
+            <Button
+              variant="ghost"
+              className="mt-2 font-normal flex w-full items-center justify-start text-sm rounded-sm mx-1 p-2 text-neutral-500 font-normal hover:bg-[#e8e8e6]"
+              onClick={() => setShowAddWorkspaceModal(true)}
+            >
+              Add workspace
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
     </>

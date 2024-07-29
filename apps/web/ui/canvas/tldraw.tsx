@@ -12,204 +12,170 @@ import {
   TLEditorComponents,
   track,
   DefaultSizeStyle,
+  TLEventMapHandler,
+  Editor,
+  TLUiComponents,
 } from "@tldraw/tldraw";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { CustomArrowShapeUtil } from "@/ui/canvas/arrow";
 import { useParams, useSearchParams } from "next/navigation";
 import useBlockContent from "@/lib/swr/use-block-content";
-import {
-  Button,
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetOverlay,
-  SheetPortal,
-  SheetTitle,
-  SheetTrigger,
-  ScrollArea
-} from "@repo/ui";
-import Editor from "@/ui/editor/editor"
+import NoteEditor from "@/ui/editor/advanced-editor";
+import useBlocksStore from "@/lib/zustand/transactionQueue";
+import _ from "lodash";
+import { v4 as uuidv4, validate as validateUuid } from "uuid";
+import createBlock from "@/lib/transactions/create-block";
+import { Block } from "@/lib/types";
+import updateBlock from "@/lib/transactions/update-block";
+import {ContextToolbar} from "@/ui/canvas/ui/context-toolbar";
+import {Toolbar} from "@/ui/canvas/ui/toolbar";
+import {Background} from "@/ui/canvas/ui/background"
 
 const MyCustomShapes = [CustomArrowShapeUtil];
 
-function InsideOfContext() {
-  // const editor = useEditor()
-  // const {document, session} = getSnapshot(editor.store)
-  // // console.log(`doc: ${JSON.stringify(document, null, 2)}`)
-  // // console.log(`session: ${JSON.stringify(session, null, 2)}`)
-  // // your editor code here
-  // return null // or whatever
-  const searchParams = useSearchParams();
-  const { blocks } = useBlockContent(searchParams.get("page") ?? "");
-  let shapes: Array<TLShapePartial> = [];
-  blocks?.map((block) => {
-    if (block.type == "tlshape") {
-      block.properties.id = createShapeId(block.id);
-      shapes.push(block.properties);
-    }
-  });
-
-  console.log(`shapes: ${JSON.stringify(shapes, null, 2)}`);
-
-  const editor = useEditor();
-  if (blocks) {
-    editor.createShapes(shapes);
-  }
-  const unlisten = editor.store.listen(
-    (update) => {
-      localStorage.setItem(
-        "my-editor-snapshot",
-        JSON.stringify(getSnapshot(editor.store))
-      );
-    },
-    { scope: "document", source: "user" }
+function InfrontOfTheCanvasWrapper() {
+  return (
+    <>
+      <Toolbar/>
+      <ContextToolbar/>
+    </>
   );
-  return null;
 }
 
-const ContextToolbarComponent = track(() => {
-  const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (modalOpen) {
-      // Pushing the change to the end of the call stack
-      const timer = setTimeout(() => {
-        document.body.style.pointerEvents = '';
-      }, 0);
-
-      return () => clearTimeout(timer);
-    } else {
-      document.body.style.pointerEvents = 'auto';
-    }
-  }, [modalOpen]);
-
-  const editor = useEditor();
-  const showToolbar = editor.isIn("select.idle");
-  if (!showToolbar) return null;
-  // const selectionRotatedPageBounds = editor.getSelectionRotatedPageBounds()
-  const hoveredShape = editor.getHoveredShape();
-  let selectionRotatedPageBounds;
-  if (hoveredShape) {
-    selectionRotatedPageBounds = editor.getShapePageBounds(hoveredShape);
-  } else {
-    selectionRotatedPageBounds = editor.getSelectionRotatedPageBounds();
-  }
-
-  if (!selectionRotatedPageBounds) return null;
-  console.log(`hoveredShape: ${JSON.stringify(hoveredShape, null, 2)}`);
-  console.log(
-    `selectionRotatedPageBounds: ${JSON.stringify(selectionRotatedPageBounds, null, 2)}`
-  );
-
-  // [2]
-  let size;
-  if (hoveredShape) {
-    size = editor.getShapeStyleIfExists(hoveredShape, DefaultSizeStyle);
-  } else {
-    size = editor.getSharedStyles().get(DefaultSizeStyle);
-  }
-  // const size = editor.getShapeStyleIfExists(hoveredShape, DefaultSizeStyle)
-  // const size = editor.getSharedStyles().get(DefaultSizeStyle)
-  console.log(`size: ${JSON.stringify(size, null, 2)}`);
-  if (!size) return null;
-  // const currentSize = size.type === 'shared' ? size.value : undefined
-  const currentSize = size;
-
-  const pageCoordinates = editor.pageToViewport(
-    selectionRotatedPageBounds.point
-  );
-
-  const OpenNoteClicked = () => {
-    console.log("Open note clicked");
-  };
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: Math.max(16, pageCoordinates.y - 48),
-        left: Math.max(16, pageCoordinates.x),
-        pointerEvents: "all",
-        // [3]
-        width: selectionRotatedPageBounds.width,
-      }}
-      // [4]
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            borderRadius: 8,
-            display: "flex",
-            boxShadow: "0 0 0 1px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1)",
-            background: "var(--color-panel)",
-            width: "fit-content",
-            alignItems: "center",
-          }}
-        >
-          <Sheet onOpenChange={(open) => setModalOpen(open)} modal={false}>
-            {/* <SheetOverlay className=""></SheetOverlay> */}
-            <SheetTrigger>
-              <Button>Open note</Button>
-            </SheetTrigger>
-            <SheetPortal>
-              <SheetContent className="sm:max-w-[800px]">
-                <ScrollArea className="w-full h-full">
-                <Editor onChange={(change) => {console.log(change)}}></Editor>
-                {/* <SheetHeader>
-                  <SheetTitle>Are you absolutely sure?</SheetTitle>
-                  <SheetDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account and remove your data from our servers.
-                  </SheetDescription>
-                </SheetHeader>
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </SheetClose>
-                </SheetFooter> */}
-                </ScrollArea>
-              </SheetContent>
-            </SheetPortal>
-          </Sheet>
-          {/* <Button onClick={() => OpenNoteClicked()}>
-            Open note
-          </Button> */}
-          {/* <div
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									height: 32,
-									width: 32,
-									background:'transparent',
-								}}
-								onClick={() => console.log("button clicked")}
-							>
-                Open note
-							</div> */}
-        </div>
-      </div>
-    </div>
-  );
-});
-
 const components: TLEditorComponents = {
-  InFrontOfTheCanvas: ContextToolbarComponent,
+  InFrontOfTheCanvas: InfrontOfTheCanvasWrapper,
+  Background: Background,
 };
 
+const UIcomponents: TLUiComponents = {
+	ContextMenu: null,
+	ActionsMenu: null,
+	HelpMenu: null,
+	ZoomMenu: null,
+	MainMenu: null,
+	Minimap: null,
+	StylePanel: null,
+	PageMenu: null,
+	NavigationPanel: null,
+	Toolbar: null,
+	KeyboardShortcutsDialog: null,
+	QuickActions: null,
+	HelperButtons: null,
+	DebugPanel: null,
+	DebugMenu: null,
+	SharePanel: null,
+	MenuPanel: null,
+	TopPanel: null,
+	// CursorChatBubble: null,
+}
+
 export default function TldrawCanvas() {
-  const [store] = useState(() => {
-    // const stringified = localStorage.getItem('my-editor-snapshot')
+  const searchParams = useSearchParams();
+  const { workspace: workspaceId } = useParams<{ workspace: string }>();
+  const pageId = searchParams.get("page");
+  const [editor, setEditor] = useState<Editor>();
+  const setAppToState = useCallback((editor: Editor) => {
+    setEditor(editor);
+  }, []);
+  const { blocks } = useBlockContent(pageId ?? "");
+  // const [storeEvents, setStoreEvents] = useState<string[]>([])
+  const { enqueueTransaction } = useBlocksStore();
+
+  useEffect(() => {
+    if (editor) {
+      let shapes: Array<TLShapePartial> = [];
+
+      blocks?.map((block) => {
+        if (block.type == "tlshape") {
+          shapes.push(block.properties);
+        }
+      });
+
+
+      editor.createShapes(shapes);
+    }
+  }, [editor, blocks]);
+
+  function logChangeEvent(eventName: string) {
+    // setStoreEvents((events) => [...events, eventName])
+  }
+
+  useEffect(() => {
+    if (!editor) return;
+
+    editor.sideEffects.registerBeforeCreateHandler("shape", (shape, source) => {
+      // remove 'shape' from shape.id
+      if (shape.meta.id) {
+        return shape;
+      } else {
+        return { ...shape, meta: { id: uuidv4() } };
+      }
+    });
+
+    //[1]
+    const handleChangeEvent: TLEventMapHandler<"change"> = (change) => {
+      // Added
+      for (const record of Object.values(change.changes.added)) {
+        if (record.typeName === "shape") {
+          console.log("record", record);
+          // logChangeEvent(`created shape (${record.type})\n`);
+          let alreadyExists = false;
+
+          for (let b of blocks || []) {
+            if (b.id == record.meta.id) {
+              alreadyExists = true;
+            }
+          }
+
+          if (!alreadyExists) {
+            const block: Block = {
+              id: record.meta.id,
+              type: "tlshape",
+              properties: record,
+              parentId: searchParams.get("page") ?? "",
+            };
+            const pageId = searchParams.get("page") ?? "";
+            const transaction = createBlock(block, workspaceId);
+
+            enqueueTransaction(transaction);
+          }
+        }
+      }
+
+      // Updated
+      for (const [from, to] of Object.values(change.changes.updated)) {
+        if (to.typeName === "shape") {
+          const blockUpdate = {
+            properties: to,
+          };
+
+          const transaction = updateBlock(blockUpdate, to.meta.id, workspaceId);
+
+          enqueueTransaction(transaction);
+        }
+      }
+
+      // Removed
+      for (const record of Object.values(change.changes.removed)) {
+        if (record.typeName === "shape") {
+          // logChangeEvent(`deleted shape (${record.type})\n`)
+          // unaliveBlock({id: record.meta.id, type: "tlshape", properties: record, parentId: searchParams.get("page") ?? "", alive: false});
+        }
+      }
+    };
+
+    // [2]
+    const cleanupFunction = editor.store.listen(handleChangeEvent, {
+      source: "user",
+      scope: "all",
+    });
+
+    return () => {
+      cleanupFunction();
+    };
+  }, [editor, enqueueTransaction, blocks]);
+
+  const [store, setStore] = useState(() => {
     const stringified = null;
     if (!stringified) {
       return createTLStore({
@@ -223,7 +189,6 @@ export default function TldrawCanvas() {
     });
 
     // Get the snapshot
-    // console.log(`stringified: ${stringified}`)
     if (!stringified) {
       return newStore;
     }
@@ -234,6 +199,14 @@ export default function TldrawCanvas() {
     return newStore;
   });
 
+  useEffect(() => {
+    setStore(
+      createTLStore({
+        shapeUtils: [...defaultShapeUtils, ...MyCustomShapes],
+      })
+    );
+  }, [pageId]);
+
   return (
     <div className="h-full w-full">
       <Tldraw
@@ -242,10 +215,18 @@ export default function TldrawCanvas() {
         //   editor.createShapes([{ type: "custom-arrow", x: 100, y: 100 }]);
         // }}
         store={store}
-        components={components}
+        components={{...components, ...UIcomponents}}
+        onMount={setAppToState}
       >
-        <InsideOfContext />
+        {/* <BlocksState /> */}
       </Tldraw>
     </div>
   );
 }
+
+function getBlockIdFromShapeId(shapeId: string): string {
+  const blockId = shapeId.split("shape:")[1];
+  return blockId || "";
+}
+
+function initShapes(editor: Editor) {}
