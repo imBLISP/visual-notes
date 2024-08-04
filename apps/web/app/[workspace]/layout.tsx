@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
-import "./prosemirror.css";
+import "../globals.css";
+// import "./prosemirror.css";
 import WorkspaceSwitcher from "@/ui/layout/workspace-switcher";
 import UserDropdown from "@/ui/layout/user-dropdown";
 import Settings from "@/ui/layout/settings";

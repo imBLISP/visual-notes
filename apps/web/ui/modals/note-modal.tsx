@@ -20,7 +20,7 @@ import {
   useState,
 } from "react";
 import { Page } from "@/ui/editor/dndEditor/editor";
-import {Layout} from "@/ui/editor/dndEditor/block";
+import { Layout } from "@/ui/editor/dndEditor/block";
 
 const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -31,8 +31,7 @@ function NoteModal({
   showNoteModal: boolean;
   setShowNoteModal: Dispatch<SetStateAction<boolean>>;
 }) {
-
-    const sheetRef = useRef(null);
+  const sheetRef = useRef(null);
 
   return (
     <Sheet
@@ -40,8 +39,8 @@ function NoteModal({
       open={showNoteModal}
       onOpenChange={(open) => {
         console.log(sheetRef);
-        sheetRef.current?.setAttribute('data-state', open? 'open' : 'closed');
-        wait().then(() => setShowNoteModal(open))
+        sheetRef.current?.setAttribute("data-state", open ? "open" : "closed");
+        wait().then(() => setShowNoteModal(open));
       }}
     >
       <SheetContent
@@ -52,18 +51,51 @@ function NoteModal({
           e.preventDefault();
         }}
         onInteractOutside={(e) => {
-            e.preventDefault();
+          e.preventDefault();
         }}
       >
-        <Page layout={Layout.Vertical} pageBlock={{
-          id: 'test_id',
-          type: "page",
-          parentId: 'test_parent_id',
-          properties: {
-            title: 'page_title',
-          },
-          content: [] 
-        }}></Page>
+        <Page
+          layout={Layout.Vertical}
+          pageBlock={{
+            id: "test_id",
+            type: "page",
+            parentId: "test_parent_id",
+            properties: {
+              title: "page_title",
+            },
+            content: ["child_id_1", "child_id_2"],
+          }}
+          allBlocks={[
+            {
+              id: "test_id",
+              type: "page",
+              parentId: "test_parent_id",
+              properties: {
+                title: "page_title",
+              },
+              content: ["child_id_1", "child_id_2"],
+            },
+            {
+              id: "child_id_1",
+              type: "text",
+              parentId: "test_id",
+              properties: {
+                title: "child 1 title",
+              },
+              content: [],
+            },
+            {
+              id: "child_id_2",
+              type: "text",
+              parentId: "test_id",
+              properties: {
+                title: "child 2 title",
+              },
+              content: [],
+            },
+
+          ]}
+        ></Page>
       </SheetContent>
     </Sheet>
   );
