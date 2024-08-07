@@ -35,7 +35,7 @@ export const Default: Story = {
         },
         {
           id: "2",
-          type: "page",
+          type: "text",
           properties: {
             title: "text one",
           },
@@ -44,7 +44,7 @@ export const Default: Story = {
         },
         {
           id: "3",
-          type: "page",
+          type: "text",
           properties: {
             title: "text two",
           },
@@ -53,7 +53,7 @@ export const Default: Story = {
         },
         {
           id: "4",
-          type: "page",
+          type: "text",
           properties: {
             title: "text three",
           },

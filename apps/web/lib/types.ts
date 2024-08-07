@@ -11,6 +11,10 @@ export interface PageProperties {
   title?: string;
 }
 
+export interface TextProperties {
+  title?: string;
+}
+
 // export type BlockProps =
 // {
 
@@ -38,6 +42,13 @@ export type Block =
       id: string;
       type: "page";
       properties: PageProperties;
+      parentId: string;
+      content: string[];
+    }
+  | {
+      id: string;
+      type: "text";
+      properties: TextProperties;
       parentId: string;
       content: string[];
     };
