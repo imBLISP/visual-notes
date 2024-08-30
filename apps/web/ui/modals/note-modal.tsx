@@ -19,7 +19,9 @@ import {
     useRef,
     useState,
 } from "react";
-import Editor from "@/ui/dndkit/editor/editor"
+import {
+    BlockEditor
+} from "@/ui/editor"
 
 const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -55,49 +57,11 @@ function NoteModal({
                     e.preventDefault();
                 }}
             >
-                <Editor
-                    blockId={"test_id"}
-                    allBlocks={[
-                        {
-                            id: "test_id",
-                            type: "page",
-                            parentId: "test_parent_id",
-                            properties: {
-                                title: "page_title",
-                            },
-                            content: ["child_id_1", "child_id_2", "child_id_3"],
-                        },
-                        {
-                            id: "child_id_1",
-                            type: "text",
-                            parentId: "test_id",
-                            properties: {
-                                title: "child 1 title",
-                            },
-                            content: [],
-                        },
-                        {
-                            id: "child_id_2",
-                            type: "text",
-                            parentId: "test_id",
-                            properties: {
-                                title: "child 2 title",
-                            },
-                            content: [],
-                        },
-                        {
-                            id: "child_id_3",
-                            type: "text",
-                            parentId: "test_id",
-                            properties: {
-                                title: "child 3 title",
-                            },
-                            content: [],
-                        },
-
-                    ]}
-                    disableFirst={true}
-                ></Editor>
+                <BlockEditor
+                    ydoc={null}
+                    provider={null}
+                    hasCollab={false}
+                ></BlockEditor>
             </SheetContent>
         </Sheet>
     );

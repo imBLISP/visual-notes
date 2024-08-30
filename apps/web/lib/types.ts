@@ -1,4 +1,5 @@
 import { TLShapePartial } from "@tldraw/tldraw";
+import { Content } from "@tiptap/core";
 
 export interface Workspace {
     id: string;
@@ -22,6 +23,8 @@ export interface PageBlock extends BaseBlock {
     type: "page";
     properties: {
         title?: string;
+        editorContent: Content;
+        previewBlockId: string;
     };
 }
 

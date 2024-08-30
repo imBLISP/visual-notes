@@ -42,9 +42,12 @@ declare module 'slate' {
 const initialValue = [
     {
         type: 'paragraph',
-        children: [{ text: 'A line of text in a paragraph.' }],
+        children: [
+            { text: 'A line of text in a paragraph.' },
+        ],
     },
 ]
+
 
 interface EditorProps {
     blockId: string;
@@ -65,9 +68,15 @@ export default function Editor({ blockId, allBlocks, disableFirst = false }: Edi
     // slate
     const [editor] = useState(() => withReact(createEditor()));
 
+    const renderElement = (props) => {
+        console.log("props", props);
+        return <p {...props.attributes}>{...props.children}</p>
+    }
+
     return (
         <div className="ml-12">
             <Slate editor={editor} initialValue={initialValue}>
+            <input></input>
                 <DndContext
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
