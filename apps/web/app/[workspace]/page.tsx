@@ -1,5 +1,5 @@
 // import styles from "./page.module.css";
-import Tldraw from "@/ui/canvas/tldraw";
+import Tldraw from "@/ui/canvas/canvas";
 
 export default function Home() {
   return (

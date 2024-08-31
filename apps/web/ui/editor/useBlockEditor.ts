@@ -40,7 +40,6 @@ export const useBlockEditor = ({
     provider ? WebSocketStatus.Connecting : WebSocketStatus.Disconnected,
   )
 
-
   const editor = useEditor(
     {
       immediatelyRender: true,

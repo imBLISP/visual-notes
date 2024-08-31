@@ -17,19 +17,18 @@ import {
   TLUiComponents,
 } from "@tldraw/tldraw";
 import React, { useCallback, useEffect, useState } from "react";
-import { CustomArrowShapeUtil } from "@/ui/canvas/arrow";
+import { CustomArrowShapeUtil } from "@/ui/canvas/shapes/arrow/arrow";
 import { useParams, useSearchParams } from "next/navigation";
 import useBlockContent from "@/lib/swr/use-block-content";
-import NoteEditor from "@/ui/editor/advanced-editor";
 import useBlocksStore from "@/lib/zustand/transactionQueue";
 import _ from "lodash";
 import { v4 as uuidv4, validate as validateUuid } from "uuid";
 import createBlock from "@/lib/transactions/create-block";
 import { Block } from "@/lib/types";
 import updateBlock from "@/lib/transactions/update-block";
-import {ContextToolbar} from "@/ui/canvas/ui/context-toolbar";
-import {Toolbar} from "@/ui/canvas/ui/toolbar";
-import {Background} from "@/ui/canvas/ui/background"
+import {ContextToolbar} from "@/ui/canvas/toolbar/secondary-toolbar";
+import {Toolbar} from "@/ui/canvas/toolbar/primary-toolbar";
+import {Background} from "@/ui/canvas/backgrounds/background"
 
 const MyCustomShapes = [CustomArrowShapeUtil];
 

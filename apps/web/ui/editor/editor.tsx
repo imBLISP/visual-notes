@@ -27,6 +27,7 @@ export const BlockEditor = ({
 }) => {
   const menuContainerRef = useRef(null)
 
+  // fetch the intial content from database 
   const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider })
 
   if (!editor || !users) {

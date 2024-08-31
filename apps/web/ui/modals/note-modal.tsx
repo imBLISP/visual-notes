@@ -22,6 +22,8 @@ import {
 import {
     BlockEditor
 } from "@/ui/editor"
+import { useSearchParams } from "next/navigation";
+import useBlockContent from "@/lib/swr/use-block-content";
 
 const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -33,6 +35,14 @@ function NoteModal({
     setShowNoteModal: Dispatch<SetStateAction<boolean>>;
 }) {
     const sheetRef = useRef(null);
+    // get the block id from the url
+    const searchParams = useSearchParams();
+    const blockId = searchParams.get("blockId");
+
+    // get the block content only once per render
+    const { data: blockContent, error } = useBlockContent(blockId);
+
+    console.log("blockContent", blockContent);
 
     return (
         <Sheet
