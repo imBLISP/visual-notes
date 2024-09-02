@@ -26,8 +26,8 @@ import { v4 as uuidv4, validate as validateUuid } from "uuid";
 import createBlock from "@/lib/transactions/create-block";
 import { Block } from "@/lib/types";
 import updateBlock from "@/lib/transactions/update-block";
-import {ContextToolbar} from "@/ui/canvas/toolbar/secondary-toolbar";
-import {Toolbar} from "@/ui/canvas/toolbar/primary-toolbar";
+import {ContextToolbar} from "@/ui/canvas/toolbar/contextToolbar/context-toolbar";
+import {Toolbar} from "@/ui/canvas/toolbar/primaryToolbar/primary-toolbar";
 import {Background} from "@/ui/canvas/backgrounds/background"
 
 const MyCustomShapes = [CustomArrowShapeUtil];
