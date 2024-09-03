@@ -23,6 +23,7 @@ export const BlocksSchema = z.object({
         parentId: z.string().optional().describe("The ID of the parent block."),
         rotation: z.number().optional().describe("The rotation of the block."),
         typeName: z.string().optional().describe("The type name of the block."),
+        editorContent: z.any().optional().describe("The editor content of the block."),
     }).optional().describe("The properties of the block."),
     parentId: z.string().uuid().optional().describe("The ID of the parent block."),
     after: z.string().uuid().optional().describe("The ID of the block after."),

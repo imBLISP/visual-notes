@@ -30,12 +30,13 @@ function NoteModal({
     const searchParams = useSearchParams();
 
     const blockId = useMemo(() => searchParams.get("blockId"), [searchParams]);
-    console.log("blockId", blockId);
 
     // get the block content only once per render
     const { blocks, error, loading } = useBlockContent(blockId);
+    const pageBlock = blocks?.find((block) => block.type === "page");
+    const pageContent = pageBlock?.properties.editorContent;
+    console.log("pageContent", pageContent);
 
-    console.log("block", blocks);
 
     return (
         <Sheet
@@ -61,6 +62,7 @@ function NoteModal({
                 }}
             >
                 <BlockEditor
+                    initialContent={pageContent}
                     ydoc={null}
                     provider={null}
                     hasCollab={false}

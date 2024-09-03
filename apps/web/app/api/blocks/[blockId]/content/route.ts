@@ -9,6 +9,10 @@ export const GET = async (
   req: NextRequest,
   { params }: { params: { blockId: string } }
 ) => {
+  if (!params.blockId) {
+    return NextResponse.json({ error: "Block ID is required" }, { status: 400 });
+  }
+
   const contents = db
     .select({
       id: sql`unnest(${blocksTable.content})`.mapWith(uuid).as("id"),

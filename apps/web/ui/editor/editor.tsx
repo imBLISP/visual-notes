@@ -1,5 +1,5 @@
 import { EditorContent } from '@tiptap/react'
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 
 import { LinkMenu } from './components/menus/LinkMenu'
 
@@ -16,10 +16,12 @@ import * as Y from 'yjs'
 import { TiptapCollabProvider } from '@hocuspocus/provider'
 
 export const BlockEditor = ({
+  initialContent,
   aiToken,
   ydoc,
   provider,
 }: {
+  initialContent: any
   aiToken?: string
   hasCollab: boolean
   ydoc: Y.Doc
@@ -28,11 +30,19 @@ export const BlockEditor = ({
   const menuContainerRef = useRef(null)
 
   // fetch the intial content from database 
-  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider })
+  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider, initialContent })
+
+  console.log("initialContent inside block editor", initialContent);
 
   if (!editor || !users) {
     return null
   }
+
+  useEffect(() => {
+    if (initialContent) {
+      editor.commands.setContent(initialContent);
+    }
+  }, [initialContent]);
 
   return (
     <div className="flex h-full" ref={menuContainerRef}>

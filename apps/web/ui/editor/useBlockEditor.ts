@@ -12,8 +12,8 @@ import { ExtensionKit } from '@/ui/editor/extensions/extension-kit'
 import { userColors, userNames } from '@/ui/editor/lib/constants'
 import { randomElement } from '@/ui/editor/lib/utils'
 import type { EditorUser } from '@/ui/editor/types'
-import { initialContent } from '@/ui/editor/lib/data/initialContent'
 import UniqueID from '@tiptap-pro/extension-unique-id'
+import { Content } from '@tiptap/core'
 
 import { getContentDiff } from '@/ui/editor/lib/data/serializeOperations'
 
@@ -24,12 +24,14 @@ declare global {
 }
 
 export const useBlockEditor = ({
+  initialContent,
   aiToken,
   ydoc,
   provider,
   userId,
   userName = 'Maxi',
 }: {
+  initialContent: Content;
   aiToken?: string
   ydoc: YDoc
   provider?: TiptapCollabProvider | null | undefined
@@ -39,6 +41,8 @@ export const useBlockEditor = ({
   const [collabState, setCollabState] = useState<WebSocketStatus>(
     provider ? WebSocketStatus.Connecting : WebSocketStatus.Disconnected,
   )
+
+  console.log("initialContent", initialContent);
 
   const editor = useEditor(
     {
