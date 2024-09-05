@@ -1,10 +1,10 @@
 import {BlockOperation, Block} from "@/lib/types";
 
-export function set(block: any, blockId: string, workspaceId: string, path: string[] = []): BlockOperation {
+export function deleteBlock(blockId: string, workspaceId: string): BlockOperation {
     return {
-        args: { ...block },
-        path: path,
-        command: "set",
+        args: {},
+        path: [],
+        command: "delete",
         pointer: {
           id: blockId,
           table: "blocks",

@@ -1,3 +1,5 @@
+"use client"
+
 import {Note} from "@/ui/icons/canvas"
 import {Button} from "@repo/ui"
 import { ModalContext } from "@/ui/modals/provider";

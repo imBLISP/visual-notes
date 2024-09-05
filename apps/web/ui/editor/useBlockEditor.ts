@@ -7,13 +7,15 @@ import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 import { TiptapCollabProvider, WebSocketStatus } from '@hocuspocus/provider'
 import { v4 as uuidv4 } from "uuid";
 import type { Doc as YDoc } from 'yjs'
-
+import { usePathname } from "next/navigation";
 import { ExtensionKit } from '@/ui/editor/extensions/extension-kit'
 import { userColors, userNames } from '@/ui/editor/lib/constants'
 import { randomElement } from '@/ui/editor/lib/utils'
 import type { EditorUser } from '@/ui/editor/types'
 import UniqueID from '@tiptap-pro/extension-unique-id'
 import { Content } from '@tiptap/core'
+import updateEditorContent from '@/lib/transactions/update-editor-content'
+import useBlocksStore from '@/lib/zustand/transactionQueue'
 
 import { getContentDiff } from '@/ui/editor/lib/data/serializeOperations'
 
@@ -25,6 +27,7 @@ declare global {
 
 export const useBlockEditor = ({
   initialContent,
+  pageId,
   aiToken,
   ydoc,
   provider,
@@ -32,6 +35,7 @@ export const useBlockEditor = ({
   userName = 'Maxi',
 }: {
   initialContent: Content;
+  pageId: string;
   aiToken?: string
   ydoc: YDoc
   provider?: TiptapCollabProvider | null | undefined
@@ -42,7 +46,11 @@ export const useBlockEditor = ({
     provider ? WebSocketStatus.Connecting : WebSocketStatus.Disconnected,
   )
 
-  console.log("initialContent", initialContent);
+  const pathname = usePathname();
+  const workspaceId = pathname.split("/")[1];
+  const editorCreated = useRef(false);
+
+  const { enqueueTransaction } = useBlocksStore();
 
   const editor = useEditor(
     {
@@ -50,33 +58,37 @@ export const useBlockEditor = ({
       shouldRerenderOnTransaction: false,
       autofocus: true,
 
-    onBeforeCreate({ editor }) {
-      console.log('onBeforeCreate', editor) 
-      // Before the view is created.
-    },
-    onUpdate({ editor }) {
-      // The content has changed.
-    },
-    onSelectionUpdate({ editor }) {
-      // The selection has changed.
-    },
-    onTransaction({ editor, transaction }) {
-      console.log('onTransaction', editor.getJSON())
-    },
-    onFocus({ editor, event }) {
-      // The editor is focused.
-    },
-    onBlur({ editor, event }) {
-      // The editor isn’t focused anymore.
-    },
-    onDestroy() {
-      // The editor is being destroyed.
-    },
-    onContentError({ editor, error, disableCollaboration }) {
-      // The editor content does not match the schema.
-    },
+      onBeforeCreate({ editor }) {
+        // Before the view is created.
+      },
+      onUpdate({ editor }) {
+        const content = editor.getJSON()
+        if (workspaceId && pageId && editorCreated.current) {
+          console.log("enqueued a transaction", editor.getJSON())
+          enqueueTransaction(updateEditorContent(content, pageId, workspaceId))
+        }
+      },
+      onSelectionUpdate({ editor }) {
+        // The selection has changed.
+      },
+      onTransaction({ editor, transaction }) {
+      },
+      onFocus({ editor, event }) {
+        // The editor is focused.
+      },
+      onBlur({ editor, event }) {
+        // The editor isn’t focused anymore.
+      },
+      onDestroy() {
+        // The editor is being destroyed.
+      },
+      onContentError({ editor, error, disableCollaboration }) {
+        // The editor content does not match the schema.
+      },
 
       onCreate: ctx => {
+        editorCreated.current = true;
+        console.log("onCreate", ctx.editor.getJSON())
         if (provider && !provider.isSynced) {
           provider.on('synced', () => {
             setTimeout(() => {
@@ -96,17 +108,17 @@ export const useBlockEditor = ({
         }),
         provider
           ? Collaboration.configure({
-              document: ydoc,
-            })
+            document: ydoc,
+          })
           : undefined,
         provider
           ? CollaborationCursor.configure({
-              provider,
-              user: {
-                name: randomElement(userNames),
-                color: randomElement(userColors),
-              },
-            })
+            provider,
+            user: {
+              name: randomElement(userNames),
+              color: randomElement(userColors),
+            },
+          })
           : undefined,
         UniqueID.configure({
           attributeName: 'uid',

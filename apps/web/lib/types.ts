@@ -40,7 +40,7 @@ export type Block = ShapeBlock | PageBlock | TextBlock
 export interface BlockOperation {
     args: object;
     path: string[];
-    command: "update" | "set" | "listAfter" | "listRemove" | "listBefore";
+    command: "update" | "set" | "listAfter" | "listRemove" | "listBefore" | "delete";
     pointer: {
         id: string;
         table: string;

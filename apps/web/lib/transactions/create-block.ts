@@ -8,7 +8,7 @@ export default function (
 ): BlockTransaction {
   return {
     operations: [
-      set(block, workspaceId),
+      set(block, block.id, workspaceId),
       listAfter(block, workspaceId, listAfterBlockId)
     ],
   };

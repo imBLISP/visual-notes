@@ -75,17 +75,18 @@ export const POST = async (
           response = await tx.update(currentSchema).set({ content }).where(eq(currentSchema.id, operation.pointer.id));
         }
         else if (operation.command == 'update') {
-          response = await tx.update(currentSchema).set(
-            {
-              ...operation.args,
-              ...('properties' in operation.args && { properties: sql`${operation.args.properties}::jsonb` })
-            }
-          ).where(eq(currentSchema.id, operation.pointer.id));
+          console.log("update", operation);
+          const updateData = {
+            ...operation.args,
+            ...('properties' in operation.args && { properties: sql`${operation.args.properties}::jsonb` })
+          }
+          response = await tx.update(currentSchema).set(updateData).where(eq(currentSchema.id, operation.pointer.id));
         }
-
+        else if (operation.command == 'delete') {
+          response = await tx.delete(currentSchema).where(eq(currentSchema.id, operation.pointer.id));
+        }
       }
     });
-
 
     return NextResponse.json(response);
   }

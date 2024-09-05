@@ -6,7 +6,7 @@ import WorkspaceSwitcher from "@/ui/layout/workspace-switcher";
 import UserDropdown from "@/ui/layout/user-dropdown";
 import Settings from "@/ui/layout/settings";
 import Divider from "@/ui/icons/divider";
-import PageSwitcher from "@/ui/layout/page-switcher";
+import CanvasSwitcher from "@/ui/layout/page-switcher";
 import Share from "@/ui/layout/share";
 import {
   Breadcrumb,
@@ -62,7 +62,7 @@ export default function RootLayout({
                 {/* <Slash className="text-stone-400"/> */}
                 </BreadcrumbSeparator>
                 <BreadcrumbItem>
-                  <PageSwitcher />
+                  <CanvasSwitcher />
                   {/* <BreadcrumbPage>Breadcrumb</BreadcrumbPage> */}
                 </BreadcrumbItem>
               </BreadcrumbList>

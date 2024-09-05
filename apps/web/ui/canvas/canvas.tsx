@@ -24,11 +24,13 @@ import useBlocksStore from "@/lib/zustand/transactionQueue";
 import _ from "lodash";
 import { v4 as uuidv4, validate as validateUuid } from "uuid";
 import createBlock from "@/lib/transactions/create-block";
+import unaliveBlock from "@/lib/transactions/unalive-block";
 import { Block } from "@/lib/types";
 import updateBlock from "@/lib/transactions/update-block";
 import {ContextToolbar} from "@/ui/canvas/toolbar/contextToolbar/context-toolbar";
 import {Toolbar} from "@/ui/canvas/toolbar/primaryToolbar/primary-toolbar";
 import {Background} from "@/ui/canvas/backgrounds/background"
+import {debounce} from "lodash";
 
 const MyCustomShapes = [CustomArrowShapeUtil];
 
@@ -76,29 +78,12 @@ export default function TldrawCanvas() {
   const setAppToState = useCallback((editor: Editor) => {
     setEditor(editor);
   }, []);
-  const { blocks } = useBlockContent(pageId ?? "");
-  // const [storeEvents, setStoreEvents] = useState<string[]>([])
+
+  // BLOCKS
+  const { blocks, loading } = useBlockContent(pageId ?? "");
   const { enqueueTransaction } = useBlocksStore();
 
-  useEffect(() => {
-    if (editor) {
-      let shapes: Array<TLShapePartial> = [];
-
-      blocks?.map((block) => {
-        if (block.type == "tlshape") {
-          shapes.push(block.properties);
-        }
-      });
-
-
-      editor.createShapes(shapes);
-    }
-  }, [editor, blocks]);
-
-  function logChangeEvent(eventName: string) {
-    // setStoreEvents((events) => [...events, eventName])
-  }
-
+  // EVENTS
   useEffect(() => {
     if (!editor) return;
 
@@ -111,55 +96,47 @@ export default function TldrawCanvas() {
       }
     });
 
+    const saveCanvas = debounce((snapshot) => {
+      console.log("saving canvas", snapshot);
+      fetch("/api/saveCanvas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(snapshot),
+      }).catch((err) => {
+        console.log(err);
+      });
+    }, 1000);
+
     //[1]
     const handleChangeEvent: TLEventMapHandler<"change"> = (change) => {
+      let shapeUpdated = false
+
       // Added
       for (const record of Object.values(change.changes.added)) {
         if (record.typeName === "shape") {
-          console.log("record", record);
-          // logChangeEvent(`created shape (${record.type})\n`);
-          let alreadyExists = false;
-
-          for (let b of blocks || []) {
-            if (b.id == record.meta.id) {
-              alreadyExists = true;
-            }
-          }
-
-          if (!alreadyExists) {
-            const block: Block = {
-              id: record.meta.id,
-              type: "tlshape",
-              properties: record,
-              parentId: searchParams.get("page") ?? "",
-            };
-            const pageId = searchParams.get("page") ?? "";
-            const transaction = createBlock(block, workspaceId);
-
-            enqueueTransaction(transaction);
-          }
+          shapeUpdated = true;
         }
       }
 
       // Updated
       for (const [from, to] of Object.values(change.changes.updated)) {
-        if (to.typeName === "shape") {
-          const blockUpdate = {
-            properties: to,
-          };
-
-          const transaction = updateBlock(blockUpdate, to.meta.id, workspaceId);
-
-          enqueueTransaction(transaction);
+        if (to.typeName === "shape" || to.typeName === "camera") {
+          shapeUpdated = true;
         }
       }
 
       // Removed
       for (const record of Object.values(change.changes.removed)) {
         if (record.typeName === "shape") {
-          // logChangeEvent(`deleted shape (${record.type})\n`)
-          // unaliveBlock({id: record.meta.id, type: "tlshape", properties: record, parentId: searchParams.get("page") ?? "", alive: false});
+          shapeUpdated = true;
         }
+      }
+
+      if (shapeUpdated) {
+        const snapshot = getSnapshot(editor.store);
+        saveCanvas(snapshot);
       }
     };
 
@@ -174,6 +151,7 @@ export default function TldrawCanvas() {
     };
   }, [editor, enqueueTransaction, blocks]);
 
+  // STORE
   const [store, setStore] = useState(() => {
     const stringified = null;
     if (!stringified) {
@@ -198,6 +176,7 @@ export default function TldrawCanvas() {
     return newStore;
   });
 
+  // NEW STORE WHEN PAGE CHANGES
   useEffect(() => {
     setStore(
       createTLStore({
@@ -210,9 +189,6 @@ export default function TldrawCanvas() {
     <div className="h-full w-full">
       <Tldraw
         shapeUtils={MyCustomShapes}
-        // onMount={(editor) => {
-        //   editor.createShapes([{ type: "custom-arrow", x: 100, y: 100 }]);
-        // }}
         store={store}
         components={{...components, ...UIcomponents}}
         onMount={setAppToState}

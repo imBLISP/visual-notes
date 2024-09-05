@@ -1,16 +1,16 @@
 "use client";
 
 import { Popover, PopoverTrigger, PopoverContent, Button, Badge } from "@repo/ui";
-import useWorkspacePages from "@/lib/swr/use-workspace-pages";
+import useWorkspaceCanvases from "@/lib/swr/use-workspace-pages";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@repo/utils";
 
-export default function PageSwitcher() {
+export default function CanvasSwitcher() {
   const { workspace: slug } = useParams() as { workspace: string };
 
-  const { pages } = useWorkspacePages(slug);
+  const { pages } = useWorkspaceCanvases(slug);
   const searchParams = useSearchParams();
   const pathname = usePathname();
 

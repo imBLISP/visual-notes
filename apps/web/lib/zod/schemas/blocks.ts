@@ -30,9 +30,9 @@ export const BlocksSchema = z.object({
 })
 
 export const BlockOperationSchema = z.object({
-    args: BlocksSchema,
+    args: z.any().describe("The args of the block."),
     path: z.array(z.string()).describe("The path of the block."),
-    command: z.union([z.literal("update"), z.literal("set"), z.literal("listAfter"), z.literal("listRemove"), z.literal("listBefore")]).describe("The command of the block."),
+    command: z.union([z.literal("update"), z.literal("set"), z.literal("listAfter"), z.literal("listRemove"), z.literal("listBefore"), z.literal("delete")]).describe("The command of the block."),
     pointer: z.object({
         id: z.string().uuid().describe("The ID of the block."),
         table: z.string().describe("The table of the block."),
@@ -42,6 +42,4 @@ export const BlockOperationSchema = z.object({
 
 export const BlockTransactionSchema = z.object({
     operations: z.array(BlockOperationSchema)
-    // block: BlocksSchema,
-    // type: z.union([z.literal("update"), z.literal("delete"), z.literal("set"), z.literal("listAfter"), z.literal("listRemove")])
 })

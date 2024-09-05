@@ -16,8 +16,24 @@ export const blocksTable = pgTable('blocks', {
   content: uuid('content').array().notNull().default(sql`ARRAY[]::uuid[]`),
 });
 
+export const canvasesTable = pgTable('canvases', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  content: jsonb('content').notNull(),
+});
+
+export const pagesTable =  pgTable('pages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  content: jsonb('content').notNull(),
+});
+
 export type InsertBlock = typeof blocksTable.$inferInsert;
 export type SelectBlock = typeof blocksTable.$inferSelect;
 
 export type InsertWorkspace = typeof workspacesTable.$inferInsert;
 export type SelectWorkspace = typeof workspacesTable.$inferSelect;
+
+export type InsertCanvas = typeof canvasesTable.$inferInsert;
+export type SelectCanvas = typeof canvasesTable.$inferSelect;
+
+export type InsertPages = typeof pagesTable.$inferInsert;
+export type SelectPages = typeof pagesTable.$inferSelect;

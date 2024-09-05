@@ -8,9 +8,11 @@ export class Queue<T> {
       if (mergeFunction(lastItem, item) === lastItem) {
         // Replace the last item if it has the same ID
         this.items[this.items.length - 1] = item;
+        console.log("merged item", item)
         return;
       }
     }
+    console.log("added item", item)
     this.items.push(item);
   }
 
@@ -20,6 +22,10 @@ export class Queue<T> {
 
   isEmpty(): boolean {
     return this.items.length === 0;
+  }
+
+  length(): number {
+    return this.items.length;
   }
 }
 

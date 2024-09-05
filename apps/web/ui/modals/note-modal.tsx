@@ -34,8 +34,9 @@ function NoteModal({
     // get the block content only once per render
     const { blocks, error, loading } = useBlockContent(blockId);
     const pageBlock = blocks?.find((block) => block.type === "page");
+    const pageId = pageBlock?.id;
     const pageContent = pageBlock?.properties.editorContent;
-    console.log("pageContent", pageContent);
+    console.log("pageId", pageId);
 
 
     return (
@@ -63,6 +64,7 @@ function NoteModal({
             >
                 <BlockEditor
                     initialContent={pageContent}
+                    pageId={pageId}
                     ydoc={null}
                     provider={null}
                     hasCollab={false}

@@ -1,6 +1,6 @@
 import {BlockOperation, Block} from "@/lib/types";
 
-export function update(block: Partial<Block>, blockId: string, workspaceId: string): BlockOperation {
+export function update(block: any, blockId: string, workspaceId: string): BlockOperation {
     return {
         args: { ...block },
         path: [],

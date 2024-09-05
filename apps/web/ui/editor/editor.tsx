@@ -17,11 +17,13 @@ import { TiptapCollabProvider } from '@hocuspocus/provider'
 
 export const BlockEditor = ({
   initialContent,
+  pageId,
   aiToken,
   ydoc,
   provider,
 }: {
   initialContent: any
+  pageId: string
   aiToken?: string
   hasCollab: boolean
   ydoc: Y.Doc
@@ -30,7 +32,7 @@ export const BlockEditor = ({
   const menuContainerRef = useRef(null)
 
   // fetch the intial content from database 
-  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider, initialContent })
+  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider, initialContent, pageId })
 
   console.log("initialContent inside block editor", initialContent);
 
