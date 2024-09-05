@@ -19,11 +19,14 @@ export const blocksTable = pgTable('blocks', {
 export const canvasesTable = pgTable('canvases', {
   id: uuid('id').defaultRandom().primaryKey(),
   content: jsonb('content').notNull(),
+  properties: jsonb('properties'),
+  parentId: uuid('parent_id').notNull(),
 });
 
 export const pagesTable =  pgTable('pages', {
   id: uuid('id').defaultRandom().primaryKey(),
   content: jsonb('content').notNull(),
+  parentId: uuid('parent_id').notNull(),
 });
 
 export type InsertBlock = typeof blocksTable.$inferInsert;

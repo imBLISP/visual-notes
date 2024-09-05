@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { canvasesTable } from "@/lib/schema";
 import { NextRequest, NextResponse } from "next/server";
 
+// get a canvas
 export const GET = async (
     req: NextRequest,
     { params }: { params: { id: string } }
