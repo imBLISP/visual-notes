@@ -18,8 +18,8 @@ export const blocksTable = pgTable('blocks', {
 
 export const canvasesTable = pgTable('canvases', {
   id: uuid('id').defaultRandom().primaryKey(),
-  content: jsonb('content').notNull(),
   properties: jsonb('properties'),
+  content: jsonb('content').notNull(),
   parentId: uuid('parent_id').notNull(),
 });
 
