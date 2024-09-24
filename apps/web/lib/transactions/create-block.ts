@@ -1,15 +1,15 @@
-import { BlockTransaction, Block } from "@/lib/types";
 import {listAfter, set} from "@/lib/transactions/operations";
+import { Transaction, Block } from "@/lib/zod";
 
 export default function (
   block: Block,
   workspaceId: string,
   listAfterBlockId: string | null = null
-): BlockTransaction {
+): Transaction {
   return {
     operations: [
-      set(block, workspaceId),
-      listAfter(block, workspaceId, listAfterBlockId)
+      set(block, block.id, [], "blocks"),
+      listAfter(block.id, workspaceId, listAfterBlockId, "workspaces")
     ],
   };
 }

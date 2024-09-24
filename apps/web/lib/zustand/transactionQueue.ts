@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { Block, BlockTransaction } from "@/lib/types";
 import { Queue } from "@repo/utils";
 import { useDebouncedCallback } from "use-debounce";
-import {debounce, isEqual} from "lodash"
+import { debounce, isEqual } from "lodash"
 
 interface TransactionQueue {
   transactionQueue: Queue<BlockTransaction>;
@@ -20,8 +20,12 @@ const useTransactionQueue = create<TransactionQueue>()((set, get) => ({
   isSyncing: false,
 
   enqueueTransaction: (transaction: BlockTransaction) => {
-    const { transactionQueue, processTransaction } = get();
+    const { transactionQueue, processTransaction, isSyncing } = get();
     transactionQueue.enqueue(transaction, (existing, newItem) => {
+      if (transactionQueue.length() <= 1) {
+        return newItem;
+      }
+
       if (existing?.operations.length != newItem.operations.length) {
         return newItem;
       }
@@ -31,7 +35,7 @@ const useTransactionQueue = create<TransactionQueue>()((set, get) => ({
           !isEqual(existing?.operations[i]?.path, newItem.operations[i]?.path) ||
           existing?.operations[i]?.command !== newItem.operations[i]?.command ||
           existing?.operations[i]?.pointer.id !==
-            newItem.operations[i]?.pointer.id
+          newItem.operations[i]?.pointer.id
         ) {
           return newItem;
         }
@@ -58,26 +62,28 @@ const useTransactionQueue = create<TransactionQueue>()((set, get) => ({
       if (transaction) {
         fetch("/api/saveTransactions", {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
           body: JSON.stringify(transaction),
+        }).then(function () {
+          set({ isSyncing: false });
+          if (!transactionQueue.isEmpty()) {
+            debouncedProcessTransaction();
+          }
         }).catch((err) => {
-          console.log(err);
         });
       }
     } catch (error) {
       console.error("Error syncing shape:", error);
-      // Optionally, re-enqueue failed sync task
-    } finally {
-      set({ isSyncing: false });
-      if (!transactionQueue.isEmpty()) {
-        debouncedProcessTransaction();
-      }
-    }
+    } 
   },
 }));
 
 const debouncedProcessTransaction = debounce(
   useTransactionQueue.getState().processTransaction,
-  1000
+  500
 );
 
 export default useTransactionQueue;

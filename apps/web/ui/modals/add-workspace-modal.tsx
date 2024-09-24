@@ -11,7 +11,6 @@ import {
   Input,
   FormField,
   Avatar,
-  AvatarImage,
   AvatarFallback,
 } from "@repo/ui";
 import {
@@ -26,29 +25,18 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { WorkspaceSchema } from "@/lib/zod/schemas/workspaces";
+import { toast } from "sonner";
+import useWorkspaces from "@/lib/swr/use-workspaces";
+import createWorkspace from "@/lib/transactions/create-workspace";
+import { useParams } from "next/navigation";
 
-const formSchema = z.object({
-  username: z.string().min(2).max(50),
+
+
+const formSchema = WorkspaceSchema.pick({
+  name: true,
+  logo: true
 });
-
-// export function ProfileForm() {
-//   // 1. Define your form.
-//   const form = useForm<z.infer<typeof formSchema>>({
-//     resolver: zodResolver(formSchema),
-//     defaultValues: {
-//       username: "",
-//     },
-//   })
-
-//   // 2. Define a submit handler.
-//   function onSubmit(values: z.infer<typeof formSchema>) {
-//     // Do something with the form values.
-//     // ✅ This will be type-safe and validated.
-//     console.log(values)
-//   }
-// }
-
-const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
 function AddWorkspaceModal({
   showAddWorkspaceModal,
@@ -58,7 +46,10 @@ function AddWorkspaceModal({
   setShowAddWorkspaceModal: Dispatch<SetStateAction<boolean>>;
 }) {
   const dialogRef = useRef(null);
-  //   const overlayRef = useRef(null);
+  const { mutate: mutateWorkspaces } = useWorkspaces();
+  const { workspaceId } = useParams() as {
+    workspaceId?: string;
+  };
   const [show, setShow] = useState(false);
   useEffect(() => {
     setShow(showAddWorkspaceModal);
@@ -67,50 +58,52 @@ function AddWorkspaceModal({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      name: "",
+      logo: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  function onSubmit(newWorkspace: z.infer<typeof formSchema>) {
+    if (newWorkspace.logo === "") {
+      newWorkspace.logo = "https://api.dicebear.com/7.x/initials/svg?backgroundType=gradientLinear&fontFamily=Helvetica&fontSize=40&seed=" + newWorkspace.name;
+    }
+
+    const transaction = createWorkspace(newWorkspace);
+
+    fetch("/api/saveTransactions", {
+      method: "POST",
+      body: JSON.stringify(transaction),
+    }).then(
+      function (data) {
+        mutateWorkspaces();
+        toast.success(`Workspace ${newWorkspace.name} created`);
+        setShowAddWorkspaceModal(false)
+      }
+    ).catch((error) => {
+      console.error("Error creating workspace", error);
+      toast.error("Error creating workspace");
+    });
   }
 
   return (
     <Dialog
       open={showAddWorkspaceModal}
-      // onOpenChange={setShowAddWorkspaceModal}
       onOpenChange={(open) => {
-        console.log("setting show", open);
         setShow(open);
         dialogRef.current?.setAttribute("data-state", open ? "open" : "closed");
-        // overlayRef.current?.setAttribute("data-state", open? "open": "closed");
       }}
     >
-      {/* <DialogOverlay ref={overlayRef} onAnimationEndCapture={() => {
-            console.log('overlay animation finished');
-        }} /> */}
       <DialogContent
         ref={dialogRef}
         onAnimationEndCapture={() => {
-          console.log("content animation finished");
-          // console.log('setting open', show);
           setShowAddWorkspaceModal(show);
         }}
         className="flex flex-col items-center justify-center px-0 w-[450px]"
       >
-        {/* <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
-            </DialogDescription>
-          </DialogHeader> */}
         <div className="w-full border-b flex justify-center pb-6">
-            <div className="text-lg font-medium">
-                Create a new workspace
-            </div>
+          <div className="text-lg font-medium">
+            Create a new workspace
+          </div>
         </div>
         <Form {...form}>
           <form
@@ -120,27 +113,19 @@ function AddWorkspaceModal({
 
             <FormField
               control={form.control}
-              name="username"
+              name="name"
               render={({ field }) => (
                 <FormItem className="w-full flex flex-col justify-center items-center py-2">
                   <Avatar className="h-[100px] w-[100px]">
-                        {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-                        <AvatarFallback>CN</AvatarFallback>
+                    {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+                    <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
-                  {/* <FormLabel>Workspace name</FormLabel>
-                  <FormControl className="w-full">
-                    <Input className="w-full" placeholder="acme." {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    This is your workspace display name.
-                  </FormDescription>
-                  <FormMessage /> */}
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="username"
+              name="name"
               render={({ field }) => (
                 <FormItem className="w-full flex flex-col justify-center items-start pb-6">
                   <FormLabel>Workspace name</FormLabel>

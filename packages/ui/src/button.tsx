@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip"
 
 import { cn } from "@repo/utils"
 
@@ -18,7 +19,8 @@ const buttonVariants = cva(
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        // ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-[#f7f7f5] hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -37,7 +39,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
@@ -53,6 +55,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   }
 )
+
+const TooltipButton = React.forwardRef<HTMLButtonElement, ButtonProps & { tooltip: string, tooltipInfo?: string, side?: "top" | "bottom" | "left" | "right", sideOffset?: number}>(
+  ({ className, variant, size, asChild = false, tooltip = "", tooltipInfo = "", side="top", sideOffset=4, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <TooltipProvider delayDuration={100}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+          </TooltipTrigger>
+          <TooltipContent side={side} sideOffset={sideOffset} className="z-[60] bg-foreground flex flex-row gap-1">
+            <div className="text-zinc-200 text-xs font-medium">
+              {tooltip}
+            </div>
+            <div className="text-zinc-400 text-xs font-normal">
+              {tooltipInfo}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+)
+
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+export { Button, buttonVariants, TooltipButton }

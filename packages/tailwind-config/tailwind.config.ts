@@ -9,9 +9,15 @@ const config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
     "../../packages/ui/src/**/*.{ts,tsx}",
-    "./ui/**/*.{ts,tsx}"
+    "./ui/**/*.{ts,tsx}",
+    "../web/ui/**/*.{ts,tsx}"
   ],
   prefix: "",
+  variants: {
+    extend: {
+      display: ["group-hover"],
+    },
+  },
   theme: {
     container: {
       center: true,

@@ -3,9 +3,10 @@ import {TLShapePartial} from "@tldraw/tldraw"
 import { fetcher } from "@repo/utils";
 import useSWR from "swr";
 
-export default function useBlockContent(blockId?: string) {
+export default function useBlockContent(blockId?: string | null) {
+
   const { data: blocks, error } = useSWR<Block[]>(
-    `/api/blocks/${blockId}/content`,
+    blockId ? `/api/blocks/${blockId}/content` : null,
     fetcher,
     {
       dedupingInterval: 1000,

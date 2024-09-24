@@ -1,18 +1,19 @@
-import { Pages } from "@/lib/types";
 import { fetcher } from "@repo/utils";
+import { Block } from "@/lib/zod";
 import useSWR from "swr";
 
-export default function useWorkspacePages(workspaceId: string) {
-  const { data: pages, error } = useSWR<Pages[]>(
-    `/api/workspaces/${workspaceId}/pages`,
-    fetcher,
-    {
-      dedupingInterval: 30000,
-    }
-  );
+export default function useWorkspaceBlocks(workspaceId: string | undefined | null) {
+    const { data: pages, error, mutate } = useSWR<Block[]>(
+        workspaceId ? `/api/workspaces/${workspaceId}/blocks` : null,
+        fetcher,
+        {
+            dedupingInterval: 30000,
+        }
+    );
 
-  return {
-    pages,
-    error,
-  };
+    return {
+        pages,
+        error,
+        mutate
+    };
 }
