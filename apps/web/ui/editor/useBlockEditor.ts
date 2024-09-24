@@ -16,6 +16,10 @@ import UniqueID from '@tiptap-pro/extension-unique-id'
 import { Content } from '@tiptap/core'
 import updateEditorContent from '@/lib/transactions/update-editor-content'
 import useBlocksStore from '@/lib/zustand/transactionQueue'
+import updateBlock from '@/lib/transactions/update-block'
+import { debounce } from 'lodash'
+import { useCallback } from 'react'
+import useBlock from '@/lib/swr/use-block'
 
 import { getContentDiff } from '@/ui/editor/lib/data/serializeOperations'
 
@@ -27,20 +31,24 @@ declare global {
 
 export const useBlockEditor = ({
   initialContent,
-  pageId,
+  noteId,
   aiToken,
   ydoc,
   provider,
   userId,
   userName = 'Maxi',
+  readOnly = false,
+  className,
 }: {
   initialContent: Content;
-  pageId: string;
+  noteId: string | null;
   aiToken?: string
   ydoc: YDoc
   provider?: TiptapCollabProvider | null | undefined
   userId?: string
   userName?: string
+  readOnly?: boolean
+  className?: string
 }) => {
   const [collabState, setCollabState] = useState<WebSocketStatus>(
     provider ? WebSocketStatus.Connecting : WebSocketStatus.Disconnected,
@@ -49,29 +57,59 @@ export const useBlockEditor = ({
   const pathname = usePathname();
   const workspaceId = pathname.split("/")[1];
   const editorCreated = useRef(false);
+  const { mutate: mutateNote, block: note } = useBlock(noteId)
 
-  const { enqueueTransaction } = useBlocksStore();
+  const updateEditorContent = async (content: JSONContent) => {
+    if (!noteId || !note || readOnly) return;
+
+    const transaction = updateBlock({
+      snapshot: content
+    }, noteId)
+
+    const updatedContent = {
+      ...note,
+      snapshot: content
+    }
+
+    mutateNote(updatedContent, {
+      revalidate: false,
+    })
+
+    const res = await fetch(`/api/saveTransactions`, {
+      method: "POST",
+      body: JSON.stringify(transaction),
+    })
+  }
+
+
+  useEffect(() => {
+    if (readOnly) {
+      editor?.commands.setContent(initialContent)
+      console.log("editor content", editor?.getJSON())
+    }
+  }, [initialContent])
+
+  const debouncedUpdateEditorContent = useCallback(debounce(updateEditorContent, 1000), [noteId])
 
   const editor = useEditor(
     {
       immediatelyRender: true,
       shouldRerenderOnTransaction: false,
-      autofocus: true,
+      editable: !readOnly,
+      autofocus: !readOnly,
+      content: initialContent,
 
       onBeforeCreate({ editor }) {
         // Before the view is created.
       },
       onUpdate({ editor }) {
-        const content = editor.getJSON()
-        if (workspaceId && pageId && editorCreated.current) {
-          console.log("enqueued a transaction", editor.getJSON())
-          enqueueTransaction(updateEditorContent(content, pageId, workspaceId))
-        }
       },
       onSelectionUpdate({ editor }) {
         // The selection has changed.
       },
       onTransaction({ editor, transaction }) {
+        const content = editor.getJSON()
+        debouncedUpdateEditorContent(content)
       },
       onFocus({ editor, event }) {
         // The editor is focused.
@@ -87,24 +125,26 @@ export const useBlockEditor = ({
       },
 
       onCreate: ctx => {
-        editorCreated.current = true;
-        console.log("onCreate", ctx.editor.getJSON())
-        if (provider && !provider.isSynced) {
-          provider.on('synced', () => {
-            setTimeout(() => {
-              if (ctx.editor.isEmpty) {
-                ctx.editor.commands.setContent(initialContent)
-              }
-            }, 0)
-          })
-        } else if (ctx.editor.isEmpty) {
-          ctx.editor.commands.setContent(initialContent)
-          ctx.editor.commands.focus('start', { scrollIntoView: true })
-        }
+        // ctx.editor.commands.
+        // console.log("editor created and this is the content", ctx.editor.getJSON())
+        // editorCreated.current = true;
+        // if (provider && !provider.isSynced) {
+        //   provider.on('synced', () => {
+        //     setTimeout(() => {
+        //       if (ctx.editor.isEmpty) {
+        //         ctx.editor.commands.setContent(initialContent)
+        //       }
+        //     }, 0)
+        //   })
+        // } else if (ctx.editor.isEmpty) {
+        //   ctx.editor.commands.setContent(initialContent)
+        //   ctx.editor.commands.focus('start', { scrollIntoView: true })
+        // }
       },
       extensions: [
         ...ExtensionKit({
           provider,
+          readOnly,
         }),
         provider
           ? Collaboration.configure({
@@ -131,7 +171,7 @@ export const useBlockEditor = ({
           autocomplete: 'off',
           autocorrect: 'off',
           autocapitalize: 'off',
-          class: 'min-h-full',
+          class: `min-h-full p-0 ${readOnly ? '!ml-0 !p-0' : '!ml-12'} ${className}`,
         },
       },
     },

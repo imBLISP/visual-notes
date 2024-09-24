@@ -1,10 +1,10 @@
-import { PageBlock } from "@/lib/types";
 import { fetcher } from "@repo/utils";
+import { Block } from "@/lib/zod";
 import useSWR from "swr";
 
-export default function useWorkspaceCanvases(workspaceId: string) {
-    const { data: pages, error } = useSWR<PageBlock[]>(
-        `/api/workspaces/${workspaceId}/pages`,
+export default function useWorkspaceBlocks(workspaceId: string | undefined | null) {
+    const { data: pages, error, mutate } = useSWR<Block[]>(
+        workspaceId ? `/api/workspaces/${workspaceId}/blocks` : null,
         fetcher,
         {
             dedupingInterval: 30000,
@@ -14,5 +14,6 @@ export default function useWorkspaceCanvases(workspaceId: string) {
     return {
         pages,
         error,
+        mutate
     };
 }

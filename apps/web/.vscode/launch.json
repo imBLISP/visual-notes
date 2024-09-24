@@ -6,24 +6,21 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "pnpm dev",
-
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "/turbopack/[project]/*": "${webRoot}/*"
+      }
     },
     {
       "name": "Next.js: debug client-side",
-      "type": "chrome",
+      "type": "msedge",
       "request": "launch",
-      "url": "http://localhost:3000"
-    },
-    {
-      "name": "Next.js: debug full stack",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "pnpm dev",
-      "serverReadyAction": {
-        "pattern": "- Local:.+(https?://.+)",
-        "uriFormat": "%s",
-        "action": "debugWithChrome"
-      },
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*"
+      }
     }
   ]
 }

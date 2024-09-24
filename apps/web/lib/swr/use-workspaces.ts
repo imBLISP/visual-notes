@@ -3,7 +3,7 @@ import { fetcher } from "@repo/utils";
 import useSWR from "swr";
 
 export default function useWorkspaces() {
-  const { data: workspaces, error } = useSWR<Workspace[]>(
+  const { data: workspaces, error, mutate } = useSWR<Workspace[]>(
     "/api/workspaces",
     fetcher,
     {
@@ -15,5 +15,6 @@ export default function useWorkspaces() {
     workspaces,
     error,
     loading: !workspaces && !error,
+    mutate
   };
 }

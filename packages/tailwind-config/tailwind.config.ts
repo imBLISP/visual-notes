@@ -13,6 +13,11 @@ const config = {
     "../web/ui/**/*.{ts,tsx}"
   ],
   prefix: "",
+  variants: {
+    extend: {
+      display: ["group-hover"],
+    },
+  },
   theme: {
     container: {
       center: true,

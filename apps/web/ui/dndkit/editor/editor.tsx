@@ -69,7 +69,6 @@ export default function Editor({ blockId, allBlocks, disableFirst = false }: Edi
     const [editor] = useState(() => withReact(createEditor()));
 
     const renderElement = (props) => {
-        console.log("props", props);
         return <p {...props.attributes}>{...props.children}</p>
     }
 
@@ -111,20 +110,16 @@ export default function Editor({ blockId, allBlocks, disableFirst = false }: Edi
     );
 
     function handleDragStart({ active }: DragStartEvent) {
-        console.log("Handle drag start")
-        console.log("active", active);
         setActiveId(active.id.toString());
     }
 
     function handleDragCancel() {
-        console.log("cancel");
         setActiveId(null);
     }
 
     function handleDragEnd({ over }: DragEndEvent) {
         if (over) {
             const overIndex = items.indexOf(over.id.toString());
-            console.log(`from ${activeId} to ${over.id.toString()}`)
             if (
                 activeId &&
                 activeIndex !== overIndex &&
@@ -155,7 +150,6 @@ export default function Editor({ blockId, allBlocks, disableFirst = false }: Edi
                         allBlocks
                     );
                 }
-                console.log("allBlocks", allBlocks);
                 setItems((items) => arrayMove(items, activeIndex, newIndex));
             }
         }

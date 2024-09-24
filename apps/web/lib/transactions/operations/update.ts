@@ -1,14 +1,17 @@
-import {BlockOperation, Block} from "@/lib/types";
+import { Operation} from "@/lib/zod"
 
-export function update(block: any, blockId: string, workspaceId: string): BlockOperation {
-    return {
-        args: { ...block },
-        path: [],
-        command: "update",
-        pointer: {
-          id: blockId,
-          table: "blocks",
-          workspaceId: workspaceId,
-        },
-      };
+export function update(
+  data: any,
+  destinationId: string,
+  destinationTable: "blocks" | "workspaces",
+): Operation {
+  return {
+    args: { ...data },
+    path: [],
+    command: "update",
+    pointer: {
+      id: destinationId,
+      table: destinationTable,
+    },
+  };
 }

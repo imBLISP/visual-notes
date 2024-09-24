@@ -9,34 +9,46 @@ import {
     useMemo,
     useRef,
     useState,
+    useEffect
 } from "react";
 import {
     BlockEditor
 } from "@/ui/editor"
 import { useSearchParams } from "next/navigation";
-import useBlock from "@/lib/swr/use-block";
 import useBlockContent from "@/lib/swr/use-block-content";
+import { useRouter, usePathname } from "next/navigation";
+import useBlock from "@/lib/swr/use-block";
+import { ScrollArea, Separator } from "@repo/ui";
+import { useEditor } from "@tldraw/tldraw";
 const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
 function NoteModal({
     showNoteModal,
     setShowNoteModal,
+    onNoteDelete
 }: {
     showNoteModal: boolean;
     setShowNoteModal: Dispatch<SetStateAction<boolean>>;
+    onNoteDelete: () => void;
 }) {
     const sheetRef = useRef(null);
+    const router = useRouter();
+    const pathname = usePathname();
     // get the block id from the url
     const searchParams = useSearchParams();
-
     const blockId = useMemo(() => searchParams.get("blockId"), [searchParams]);
-
+    const noteId = useMemo(() => searchParams.get("note"), [searchParams]);
     // get the block content only once per render
-    const { blocks, error, loading } = useBlockContent(blockId);
-    const pageBlock = blocks?.find((block) => block.type === "page");
-    const pageId = pageBlock?.id;
-    const pageContent = pageBlock?.properties.editorContent;
-    console.log("pageId", pageId);
+    const { block: noteBlock, loading: noteLoading } = useBlock(noteId)
+    const noteContent = noteBlock?.snapshot
+
+    useEffect(() => {
+        if (!showNoteModal) {
+            const params = new URLSearchParams(searchParams);
+            params.delete("note");
+            router.replace(`${pathname}?${params.toString()}`);
+        }
+    }, [showNoteModal]);
 
 
     return (
@@ -44,7 +56,6 @@ function NoteModal({
             modal={false}
             open={showNoteModal}
             onOpenChange={(open) => {
-                console.log(sheetRef);
                 if (sheetRef.current) {
                     sheetRef.current.setAttribute("data-state", open ? "open" : "closed");
                 }
@@ -52,7 +63,7 @@ function NoteModal({
             }}
         >
             <SheetContent
-                className="sm:max-w-[800px]"
+                className="sm:max-w-[700px] m-0 p-0"
                 ref={sheetRef}
                 // forceMount={true}
                 onPointerDownOutside={(e) => {
@@ -62,13 +73,20 @@ function NoteModal({
                     e.preventDefault();
                 }}
             >
-                <BlockEditor
-                    initialContent={pageContent}
-                    pageId={pageId}
-                    ydoc={null}
-                    provider={null}
-                    hasCollab={false}
-                ></BlockEditor>
+                <div className="h-14 w-full border-b border-gray-200" />
+                {/* <div className="h-14 w-full" /> */}
+                <ScrollArea className="h-full">
+                    <div className="pt-6 text-4xl font-bold ml-11 px-8 text-neutral-700">Untitled</div>
+                    <Separator className="mt-6 ml-20 w-[600px]" />
+                    {noteLoading ? <div>Loading...</div> : <BlockEditor
+                        initialContent={noteContent || []}
+                        noteId={noteId}
+                        ydoc={null}
+                        provider={null}
+                        hasCollab={false}
+                    ></BlockEditor>}
+
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     );
@@ -82,6 +100,7 @@ export function useNoteModal() {
             <NoteModal
                 showNoteModal={showNoteModal}
                 setShowNoteModal={setShowNoteModal}
+                onNoteDelete={() => {}}
             />
         );
     }, [showNoteModal, setShowNoteModal]);

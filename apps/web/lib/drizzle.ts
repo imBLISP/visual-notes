@@ -4,5 +4,7 @@ import postgres from 'postgres';
 
 config({path: '.env', debug: true})
 
-const client = postgres(process.env.NEXT_PUBLIC_SUPABASE_URL!);
+const client = postgres(process.env.NEXT_PUBLIC_SUPABASE_URL!, {
+    prepare: false
+});
 export const db = drizzle(client);

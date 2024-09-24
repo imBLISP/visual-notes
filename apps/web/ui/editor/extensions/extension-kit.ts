@@ -44,18 +44,21 @@ import {
   emojiSuggestion,
   Columns,
   Column,
+  // Paragraph,
   TaskItem,
   TaskList,
 } from '.'
+import Paragraph from './Paragraph/Paragraph'
 
 import { ImageUpload } from './ImageUpload'
 import { TableOfContentsNode } from './TableOfContentsNode'
 
 interface ExtensionKitProps {
   provider?: HocuspocusProvider | null
+  readOnly?: boolean
 }
 
-export const ExtensionKit = ({ provider }: ExtensionKitProps) => [
+export const ExtensionKit = ({ provider, readOnly }: ExtensionKitProps) => [
   Document,
   Columns,
   TaskList,
@@ -66,6 +69,14 @@ export const ExtensionKit = ({ provider }: ExtensionKitProps) => [
   Selection,
   Heading.configure({
     levels: [1, 2, 3, 4, 5, 6],
+    HTMLAttributes: {
+      class: 'm-0 p-0',
+    },
+  }),
+  Paragraph.configure({
+    HTMLAttributes: {
+      class: readOnly ? '!my-0' : '!my-2',
+    },
   }),
   HorizontalRule,
   StarterKit.configure({
@@ -75,6 +86,7 @@ export const ExtensionKit = ({ provider }: ExtensionKitProps) => [
     horizontalRule: false,
     blockquote: false,
     history: false,
+    paragraph: false,
     codeBlock: false,
   }),
   Details.configure({
@@ -85,7 +97,11 @@ export const ExtensionKit = ({ provider }: ExtensionKitProps) => [
   }),
   DetailsContent,
   DetailsSummary,
-  CodeBlock,
+  CodeBlock.configure({
+    HTMLAttributes: {
+      class: '!m-0 p-0 !bg-stone-800',
+    },
+  }),
   TextStyle,
   FontSize,
   FontFamily,

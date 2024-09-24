@@ -58,7 +58,6 @@ const useTransactionQueue = create<TransactionQueue>()((set, get) => ({
 
     try {
       const transaction = transactionQueue.dequeue();
-      console.log("processing transaction", transaction);
 
       if (transaction) {
         fetch("/api/saveTransactions", {
@@ -74,7 +73,6 @@ const useTransactionQueue = create<TransactionQueue>()((set, get) => ({
             debouncedProcessTransaction();
           }
         }).catch((err) => {
-          console.log(err);
         });
       }
     } catch (error) {

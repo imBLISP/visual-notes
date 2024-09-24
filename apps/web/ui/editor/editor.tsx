@@ -17,46 +17,54 @@ import { TiptapCollabProvider } from '@hocuspocus/provider'
 
 export const BlockEditor = ({
   initialContent,
-  pageId,
+  noteId,
   aiToken,
   ydoc,
   provider,
+  readOnly = false,
+  className
 }: {
   initialContent: any
-  pageId: string
+  noteId: string | null
   aiToken?: string
   hasCollab: boolean
   ydoc: Y.Doc
   provider?: TiptapCollabProvider | null | undefined
+  readOnly?: boolean
+  className?: string
 }) => {
   const menuContainerRef = useRef(null)
 
   // fetch the intial content from database 
-  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider, initialContent, pageId })
+  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider, initialContent, noteId, readOnly, className })
+  useEffect(() => {
+    console.log("editor changed", editor)
+  }, [editor])
 
-  console.log("initialContent inside block editor", initialContent);
 
-  if (!editor || !users) {
+  if (!editor || !users || !noteId) {
     return null
   }
 
-  useEffect(() => {
-    if (initialContent) {
-      editor.commands.setContent(initialContent);
-    }
-  }, [initialContent]);
 
   return (
     <div className="flex h-full" ref={menuContainerRef}>
-      <div className="relative flex flex-col flex-1 h-full overflow-hidden">
-        <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
-        <ContentItemMenu editor={editor} />
-        <LinkMenu editor={editor} appendTo={menuContainerRef} />
-        <TextMenu editor={editor} />
-        <ColumnsMenu editor={editor} appendTo={menuContainerRef} />
-        <TableRowMenu editor={editor} appendTo={menuContainerRef} />
-        <TableColumnMenu editor={editor} appendTo={menuContainerRef} />
-        <ImageBlockMenu editor={editor} appendTo={menuContainerRef} />
+      <div className="relative flex flex-col flex-1 h-full">
+        <EditorContent 
+          editor={editor} 
+          className="flex-1"
+        />
+        {!readOnly && (
+          <>
+            <ContentItemMenu editor={editor} />
+            <LinkMenu editor={editor} appendTo={menuContainerRef} />
+            <TextMenu editor={editor} />
+            <ColumnsMenu editor={editor} appendTo={menuContainerRef} />
+            <TableRowMenu editor={editor} appendTo={menuContainerRef} />
+            <TableColumnMenu editor={editor} appendTo={menuContainerRef} />
+            <ImageBlockMenu editor={editor} appendTo={menuContainerRef} />
+          </>
+        )}
       </div>
     </div>
   )

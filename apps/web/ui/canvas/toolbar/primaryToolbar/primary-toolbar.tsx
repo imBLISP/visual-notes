@@ -1,11 +1,11 @@
-import { Button } from "@repo/ui";
+import { TooltipButton } from "@repo/ui";
 import {
   useEditor,
   useTools,
   GeoShapeGeoStyle,
   useValue,
 } from "@tldraw/tldraw";
-import {Select, Rectangle, Ellipse, Arrow, Draw, Line, Text} from "@/ui/icons/canvas";
+import { Select, Rectangle, Ellipse, Arrow, Draw, Line, Text } from "@/ui/icons/canvas";
 import { createElement, useState } from "react";
 import { cn } from "@repo/utils";
 
@@ -15,6 +15,8 @@ const tldrawTools = [
     icon: Select,
     shortcut: "V",
     toolId: "select",
+    tooltip: "Select",
+    tooltipInfo: "S"
   },
   {
     name: "Rectangle",
@@ -22,6 +24,8 @@ const tldrawTools = [
     shortcut: "V",
     toolId: "geo",
     geoId: "rectangle",
+    tooltip: "Rectangle",
+    tooltipInfo: "R"
   },
   {
     name: "Ellipse",
@@ -29,30 +33,40 @@ const tldrawTools = [
     shortcut: "V",
     toolId: "geo",
     geoId: "ellipse",
+    tooltip: "Ellipse",
+    tooltipInfo: "E"
   },
   {
     name: "Arrow",
     icon: Arrow,
     shortcut: "V",
     toolId: "arrow",
+    tooltip: "Arrow",
+    tooltipInfo: "A"
   },
   {
     name: "Line",
     icon: Line,
     shortcut: "V",
     toolId: "line",
+    tooltip: "Line",
+    tooltipInfo: "L"
   },
   {
     name: "Draw",
     icon: Draw,
     shortcut: "V",
     toolId: "draw",
+    tooltip: "Draw",
+    tooltipInfo: "D"
   },
   {
     name: "Text",
     icon: Text,
     shortcut: "V",
     toolId: "text",
+    tooltip: "Text",
+    tooltipInfo: "T"
   },
 ];
 
@@ -73,12 +87,16 @@ export function Toolbar() {
     >
       <div className="flex flex-col gap-[2px]">
         {tldrawTools.map((tool) => (
-          <Button
-          size="icon"
+          <TooltipButton
+            tooltip={tool.tooltip}
+            tooltipInfo={tool.tooltipInfo}
+            sideOffset={10}
+            side="right"
+            size="icon"
             variant="ghost"
             key={tool.toolId}
             className={cn(
-              { "bg-accent": tool.toolId == currentTool.id && (tool.toolId !="geo" || tool.geoId == currentGeoId)},
+              { "bg-accent": tool.toolId == currentTool.id && (tool.toolId != "geo" || tool.geoId == currentGeoId) },
               "w-9 p-0 h-9 flex items-center justify-center rounded-sm hover:bg-accent/70"
             )}
             onClick={() => {
@@ -90,7 +108,7 @@ export function Toolbar() {
             }}
           >
             {createElement(tool.icon)}
-          </Button>
+          </TooltipButton>
         ))}
       </div>
     </div>

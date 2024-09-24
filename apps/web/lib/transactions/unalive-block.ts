@@ -1,12 +1,19 @@
-import { deleteBlock } from "@/lib/transactions/operations";
+import { update } from "@/lib/transactions/operations";
 
-export default function UpdateBlock(
+export default function unaliveBlock(
   blockId: string,
   workspaceId: string
 ) {
     return {
         operations: [
-            deleteBlock(blockId, workspaceId),
+            update(
+                {
+                    active: false
+                },
+                blockId,
+                "blocks",
+                workspaceId
+            )
         ],
     }
 }

@@ -35,13 +35,13 @@ export const TextMenu = ({ editor }: TextMenuProps) => {
     <BubbleMenu
       tippyOptions={{
         popperOptions: {
-          placement: 'top-start',
+          placement: 'top-end',
           modifiers: [
             {
               name: 'preventOverflow',
               options: {
-                boundary: 'viewport',
-                padding: 8,
+                boundary: 'document',
+                padding: 16,
               },
             },
             {
@@ -52,6 +52,7 @@ export const TextMenu = ({ editor }: TextMenuProps) => {
             },
           ],
         },
+        // maxWidth: 'calc(100vw - 16px)',
         maxWidth: 'calc(100vw - 16px)',
       }}
       editor={editor}
@@ -60,7 +61,7 @@ export const TextMenu = ({ editor }: TextMenuProps) => {
       updateDelay={100}
     >
       <Toolbar.Wrapper>
-        <AIDropdown
+        {/* <AIDropdown
           onCompleteSentence={commands.onCompleteSentence}
           onEmojify={commands.onEmojify}
           onFixSpelling={commands.onFixSpelling}
@@ -70,8 +71,8 @@ export const TextMenu = ({ editor }: TextMenuProps) => {
           onTldr={commands.onTldr}
           onTone={commands.onTone}
           onTranslate={commands.onTranslate}
-        />
-        <Toolbar.Divider />
+        /> */}
+        {/* <Toolbar.Divider /> */}
         <MemoContentTypePicker options={blockOptions} />
         <MemoFontFamilyPicker onChange={commands.onSetFont} value={states.currentFont || ''} />
         <MemoFontSizePicker onChange={commands.onSetFontSize} value={states.currentSize || ''} />

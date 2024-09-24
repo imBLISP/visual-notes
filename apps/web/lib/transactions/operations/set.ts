@@ -1,14 +1,18 @@
-import {BlockOperation, Block} from "@/lib/types";
+import { Operation } from "@/lib/zod";
 
-export function set(block: any, blockId: string, workspaceId: string, path: string[] = []): BlockOperation {
-    return {
-        args: { ...block },
-        path: path,
-        command: "set",
-        pointer: {
-          id: blockId,
-          table: "blocks",
-          workspaceId: workspaceId,
-        },
-      };
+export function set(
+  data: any, 
+  destinationId: string, 
+  path: string[] = [],
+  table: "blocks" | "workspaces",
+): Operation {
+  return {
+    args: { ...data },
+    path: path,
+    command: "set",
+    pointer: {
+      id: destinationId,
+      table: table,
+    },
+  };
 }
