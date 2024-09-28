@@ -1,6 +1,11 @@
-# Turborepo starter
+# Visual notes
 
-This is an official starter Turborepo.
+Fully visual note taking app.
+
+# Screenshots
+![image](https://github.com/user-attachments/assets/a050e8fa-7a10-466b-b60c-0e190dfa5d71)
+![image](https://github.com/user-attachments/assets/4a3f72a9-eabe-4331-898d-f276a28e00e3)
+![image](https://github.com/user-attachments/assets/660ebf3d-d3a3-4010-95ad-55c64af5f1a0)
 
 ## Using this example
 
