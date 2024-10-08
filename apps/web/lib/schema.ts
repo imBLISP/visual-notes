@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, jsonb, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, jsonb, boolean, varchar } from 'drizzle-orm/pg-core';
 import {sql} from 'drizzle-orm'
 
 export const workspacesTable = pgTable('workspaces', {
@@ -31,6 +31,13 @@ export const pagesTable =  pgTable('pages', {
   content: jsonb('content').notNull(),
   parentId: uuid('parent_id').notNull(),
 });
+
+export const userTable = pgTable('users', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: text('email').notNull(),
+  phone: varchar('phone', { length: 15 }).notNull(),
+  password: text('password').notNull(),
+})
 
 export type InsertBlock = typeof blocksTable.$inferInsert;
 export type SelectBlock = typeof blocksTable.$inferSelect;

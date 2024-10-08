@@ -10,6 +10,8 @@
     "paths": {
       "@/ui/*": ["ui/*"],
       "@/lib/*": ["lib/*"],
+      "@/utils/*": ["utils/*"],
+      "@/components/*": ["components/*"]
     }
   },
   "include": [
