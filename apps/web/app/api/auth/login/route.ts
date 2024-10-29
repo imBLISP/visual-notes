@@ -11,7 +11,7 @@ export const POST = async (req: NextRequest) => {
     // Parse and validate the incoming request body
     const body = await req.json();
     console.log('body', body);
-    const loginData = userSchema.parse(body);
+    const loginData = userSchema.omit({id: true, avatar: true, username: true}).parse(body);
 
     // Initialize Supabase client within the request handler to access cookies and headers
     const supabase = createClient();

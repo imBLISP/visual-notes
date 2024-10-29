@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, jsonb, boolean, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, pgSchema, uuid, text, jsonb, boolean, varchar } from 'drizzle-orm/pg-core';
 import {sql} from 'drizzle-orm'
 
 export const workspacesTable = pgTable('workspaces', {
@@ -32,12 +32,18 @@ export const pagesTable =  pgTable('pages', {
   parentId: uuid('parent_id').notNull(),
 });
 
-export const userTable = pgTable('users', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  email: text('email').notNull(),
-  phone: varchar('phone', { length: 15 }).notNull(),
-  password: text('password').notNull(),
-})
+
+const authSchema = pgSchema('auth');
+export const userTable = authSchema.table(
+  'users',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    email: varchar('email', { length: 255 }).notNull().unique(), // Updated to varchar with length and unique constraint
+    password: text('password').notNull(),
+    avatar: text('avatar').notNull().default(''),
+    isActive: boolean('is_active').notNull().default(true),  // Added isActive field to track user status
+});
+
 
 export type InsertBlock = typeof blocksTable.$inferInsert;
 export type SelectBlock = typeof blocksTable.$inferSelect;

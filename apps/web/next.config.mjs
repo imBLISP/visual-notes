@@ -3,7 +3,7 @@ const nextConfig = {
   serverExternalPackages: ["@tldraw/tldraw"],
   images: {
     dangerouslyAllowSVG: true,
-    domains: ["api.dicebear.com"],
+    domains: ["api.dicebear.com", "utfs.io"],
     remotePatterns: [
       {
         protocol: "https",
