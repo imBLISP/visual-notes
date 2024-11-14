@@ -53,6 +53,7 @@ export const POST = async (
           let prev = await tx.select().from(currentSchema).where(eq(currentSchema.id, operation.pointer.id));
           if (prev.length == 0) {
             operation.args.id = operation.pointer.id
+            operation.args.created_at = new Date()
             operation.args = zodSchemaMap[operation.pointer.table].parse(operation.args)
             response = await tx.insert(currentSchema).values({
               ...operation.args,

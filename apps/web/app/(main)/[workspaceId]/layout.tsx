@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "../globals.css";
+import "../../globals.css";
 import WorkspaceSwitcher from "@/ui/layout/workspace-switcher";
 import UserDropdown from "@/ui/layout/user-dropdown";
 import Settings from "@/ui/layout/settings";
@@ -17,12 +17,18 @@ import {
 } from "@repo/ui";
 import Providers from "./providers";
 
+// const roboto = Roboto({
+//   subsets: ["latin"],
+//   weight: ["300", "400", "700", "900"],
+//   display: "swap",
+// });
+
 const geistSans = localFont({
-  src: "../fonts/GeistVF.woff",
+  src: "../../fonts/GeistVF.woff",
   variable: "--font-geist-sans",
 });
 const geistMono = localFont({
-  src: "../fonts/GeistMonoVF.woff",
+  src: "../../fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
 });
 
@@ -40,8 +46,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Providers>
-          <div className="sticky px-5 w-full z-10 top-0 h-14 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center">
-          {/* <div className="sticky px-5 w-full z-10 top-0 h-14  bg-white dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center"> */}
+          {/* <div className="sticky px-5 w-full z-10 top-0 h-12 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center"> */}
+          {/* <div className="sticky px-5 w-full z-10 top-0 h-12 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center"> */}
+          {/* <div className="sticky px-5 w-full z-10 top-0 h-14  bg-white dark:bg-black/50 backdrop-blur-lg flex flex-row justify-between items-center">
             <Breadcrumb className="basis-[40%]">
               <BreadcrumbList className="gap-0 sm:gap-0">
                 <BreadcrumbItem>
@@ -67,8 +74,10 @@ export default function RootLayout({
               <Share className="mr-2" />
               <UserDropdown />
             </div>
-          </div>
-          <div className="h-[calc(100dvh-64px)] w-screen">{children}</div>
+          </div> */}
+          {/* <div className="h-[calc(100dvh-48px)] w-screen">{children}</div> */}
+          <div className="h-[calc(100dvh-56px)] w-screen">{children}</div>
+          {/* <div className="h-[calc(100dvh - 64px)] w-screen">{children}</div> */}
           <Toaster />
         </Providers>
       </body>

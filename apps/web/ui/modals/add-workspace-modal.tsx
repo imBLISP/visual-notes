@@ -30,13 +30,27 @@ import { toast } from "sonner";
 import useWorkspaces from "@/lib/swr/use-workspaces";
 import createWorkspace from "@/lib/transactions/create-workspace";
 import { useParams } from "next/navigation";
+import { uploadFile } from "@/lib/uploadThing/uploadImage";
+import FormImage from "@/ui/forms/form-image";
+import Image from "next/image";
 
-
+// Helper function to convert data URL to File object
+function dataURLtoFile(dataurl: string, filename: string): File {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
 
 const formSchema = WorkspaceSchema.pick({
   name: true,
   logo: true
-});
+}).required();
 
 function AddWorkspaceModal({
   showAddWorkspaceModal,
@@ -45,16 +59,11 @@ function AddWorkspaceModal({
   showAddWorkspaceModal: boolean;
   setShowAddWorkspaceModal: Dispatch<SetStateAction<boolean>>;
 }) {
+  // hooks start
+  const { upload } = uploadFile();
   const dialogRef = useRef(null);
   const { mutate: mutateWorkspaces } = useWorkspaces();
-  const { workspaceId } = useParams() as {
-    workspaceId?: string;
-  };
   const [show, setShow] = useState(false);
-  useEffect(() => {
-    setShow(showAddWorkspaceModal);
-  }, [showAddWorkspaceModal]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,9 +72,18 @@ function AddWorkspaceModal({
     },
   });
 
-  function onSubmit(newWorkspace: z.infer<typeof formSchema>) {
+  // hooks end
+  useEffect(() => {
+    setShow(showAddWorkspaceModal);
+  }, [showAddWorkspaceModal]);
+
+  async function onSubmit(newWorkspace: z.infer<typeof formSchema>) {
     if (newWorkspace.logo === "") {
       newWorkspace.logo = "https://api.dicebear.com/7.x/initials/svg?backgroundType=gradientLinear&fontFamily=Helvetica&fontSize=40&seed=" + newWorkspace.name;
+    }
+    else {
+      // upload image to uploadThing and get the url and replace logo with the url
+      newWorkspace.logo = await upload(newWorkspace.logo, 'workspace_logo.png');
     }
 
     const transaction = createWorkspace(newWorkspace);
@@ -84,6 +102,10 @@ function AddWorkspaceModal({
       toast.error("Error creating workspace");
     });
   }
+
+  const handleImageChange = (image: string) => {
+    form.setValue("logo", image);
+  };
 
   return (
     <Dialog
@@ -116,10 +138,7 @@ function AddWorkspaceModal({
               name="name"
               render={({ field }) => (
                 <FormItem className="w-full flex flex-col justify-center items-center py-2">
-                  <Avatar className="h-[100px] w-[100px]">
-                    {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
+                  <FormImage handleImageChange={handleImageChange} />
                 </FormItem>
               )}
             />

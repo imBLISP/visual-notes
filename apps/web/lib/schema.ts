@@ -1,4 +1,4 @@
-import { pgTable, pgSchema, uuid, text, jsonb, boolean, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, pgSchema, uuid, text, jsonb, boolean, varchar, timestamp } from 'drizzle-orm/pg-core';
 import {sql} from 'drizzle-orm'
 
 export const workspacesTable = pgTable('workspaces', {
@@ -17,6 +17,7 @@ export const blocksTable = pgTable('blocks', {
   content: uuid('content').array().notNull().default(sql`ARRAY[]::uuid[]`),
   snapshot: jsonb('snapshot'),
   active: boolean('active').notNull().default(true),
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
 });
 
 export const canvasesTable = pgTable('canvases', {

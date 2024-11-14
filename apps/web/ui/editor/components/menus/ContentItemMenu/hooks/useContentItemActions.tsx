@@ -2,8 +2,13 @@ import { Node } from '@tiptap/pm/model'
 import { NodeSelection } from '@tiptap/pm/state'
 import { Editor } from '@tiptap/react'
 import { useCallback } from 'react'
+import { useSearchParams } from "next/navigation";
+import { useEditor } from "tldraw";
+
 
 const useContentItemActions = (editor: Editor, currentNode: Node | null, currentNodePos: number) => {
+  const searchParams = useSearchParams();
+  const canvasEditor = useEditor()
   const resetTextFormatting = useCallback(() => {
     const chain = editor.chain()
 
@@ -66,12 +71,43 @@ const useContentItemActions = (editor: Editor, currentNode: Node | null, current
     }
   }, [currentNode, currentNodePos, editor])
 
+  const setPreview = useCallback(async () => {
+    const { $anchor } = editor.state.selection
+    const shapeId = searchParams.get("shape")
+    const pageId = searchParams.get("page")
+    const noteId = searchParams.get("note")
+    const noteBlockId = currentNode?.attrs.uid
+
+
+    if (shapeId) {
+      
+      const shape = canvasEditor.getShape(shapeId)
+      
+      
+      
+      canvasEditor.updateShape({
+        id: shapeId,
+        type: "shape",
+        meta: {
+          ...shape?.meta,
+          noteId: noteId,
+          noteBlockId: noteBlockId
+        }
+      })
+      const updatedShape = canvasEditor.getShape(shapeId)
+      
+    }
+
+    
+   }, [currentNode, currentNodePos, editor])
+
   return {
     resetTextFormatting,
     duplicateNode,
     copyNodeToClipboard,
     deleteNode,
     handleAdd,
+    setPreview,
   }
 }
 

@@ -67,6 +67,12 @@ export const ContentItemMenu = ({ editor }: ContentItemMenuProps) => {
                   Duplicate
                 </DropdownButton>
               </Popover.Close>
+              <Popover.Close>
+                <DropdownButton onClick={actions.setPreview}>
+                  <Icon name="Eye" />
+                  Set to preview
+                </DropdownButton>
+              </Popover.Close>
               <Toolbar.Divider horizontal />
               <Popover.Close>
                 <DropdownButton

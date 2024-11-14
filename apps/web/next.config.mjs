@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["@tldraw/tldraw"],
+  serverExternalPackages: ["tldraw"],
   images: {
     dangerouslyAllowSVG: true,
     domains: ["api.dicebear.com", "utfs.io"],
@@ -8,6 +8,12 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
         port: "",
         pathname: "/**",
       },

@@ -1,14 +1,14 @@
 "use client"
 
 import { Note } from "@/ui/icons/canvas"
-import { Button } from "@repo/ui"
+import { Button, HoverCard, HoverCardTrigger, HoverCardContent } from "@repo/ui"
 import { ModalContext } from "@/ui/modals/provider";
 import { useContext, useEffect, useState } from "react";
-import { DefaultSizeStyle, track, useEditor } from "@tldraw/tldraw";
+import { DefaultSizeStyle, track, useEditor } from "tldraw";
 import createBlock from "@/lib/transactions/create-block";
 import { v4 as uuidv4 } from "uuid";
 import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
-
+import { InfrontOfCanvasContext } from "@/ui/canvas/layout/infront-of-canvas";
 
 export function NoteTool() {
   const editor = useEditor();
@@ -19,7 +19,7 @@ export function NoteTool() {
   const pathname = usePathname();
   const searchParams = useSearchParams()
   const pageId = searchParams.get("page")
-  const { setShowNoteModal } = useContext(ModalContext);
+  const { setShowNoteModal } = useContext(InfrontOfCanvasContext)
   const [hasNote, setHasNote] = useState(false);
   const params = new URLSearchParams(searchParams);
 
@@ -35,46 +35,70 @@ export function NoteTool() {
     }
   }, [selectedShapes, editor])
 
-  async function openNoteModal() {
-    if (!hasNote) {
-      if (!pageId) return;
+  function openExistingNotes() {
+    params.set("shape", selectedShapes[0].id);
+    router.replace(`${pathname}?${params.toString()}`);
+    setShowNoteModal(true);
+  }
 
+  function openExistingNote() {
+    console.log("OPENING EXISTING NOTE");
+    const noteId = selectedShapes[0].meta?.noteId
+    if (!noteId) return;
+    console.log("NOTE ID", noteId);
 
+    params.set("note", noteId.toString());
+    params.set("shape", selectedShapes[0].id);
+    console.log("PARAMS", params.toString());
+    router.push(`${pathname}?${params.toString()}`);
 
-      const noteId = uuidv4()
-      const shapeId = selectedShapes[0].id
+    // editor.resetZoom()
+    const bounds = editor.getShapePageBounds(selectedShapes[0])
+    const pageBounds = editor.getViewportPageBounds()
+    if (!bounds) return;
+    // editor.centerOnPoint({ x: bounds.center.x + pageBounds.w / 4.5, y: bounds.center.y + pageBounds.h / 15 }, { animation: { duration: 200 } })
+    // setShowNoteModal(true);
+  }
 
-      const transaction = createBlock({
-        id: noteId,
-        type: "note",
-        properties: {},
-        content: [],
-        parentId: pageId,
-        snapshot: [],
-        active: true
-      }, workspaceId)
+  async function createNewNote() {
+    if (!pageId) return;
 
-      const res = await fetch(`/api/saveTransactions`, {
-        method: "POST",
-        body: JSON.stringify(transaction),
-      })
+    const noteNoteId = uuidv4()
+    const shapeId = selectedShapes[0].id
 
-      editor.updateShapes([{
-        id: shapeId,
-        type: "shape",
-        meta: {
-            ...selectedShapes[0].meta,
-          noteId: noteId
-        }
-      }])
+    const transaction = createBlock({
+      id: noteNoteId,
+      type: "note",
+      properties: {
+        title: "Untitled"
+      },
+      content: [],
+      parentId: pageId,
+      snapshot: [],
+      active: true,
+      created_at: new Date(),
+    }, workspaceId)
 
-      // create a new note and add it to the shape meta
-    }
+    const res = await fetch(`/api/saveTransactions`, {
+      method: "POST",
+      body: JSON.stringify(transaction),
+    })
+
+    editor.updateShapes([{
+      id: shapeId,
+      type: "shape",
+      meta: {
+        ...selectedShapes[0].meta,
+        noteId: noteNoteId
+      }
+    }])
+
     // set the note search param to note id 
     const noteId = selectedShapes[0].meta?.noteId
     if (!noteId) return;
 
     params.set("note", noteId.toString());
+    params.set("shape", selectedShapes[0].id);
     router.replace(`${pathname}?${params.toString()}`);
 
     setShowNoteModal(true);
@@ -82,9 +106,8 @@ export function NoteTool() {
 
   return (
     <>
-      <Button variant="ghost" className="p-0 w-9 h-9 flex items-center justify-center rounded-sm" onClick={openNoteModal}>
+      <Button variant="ghost" className="p-0 w-9 h-9 flex items-center justify-center rounded-sm" onClick={hasNote? openExistingNote: createNewNote}>
         <Note className="" />
-        {!hasNote && <div className="absolute w-2 h-2 bg-red-500 rounded-full"></div>}
       </Button>
     </>
   );

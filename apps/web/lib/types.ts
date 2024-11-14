@@ -1,4 +1,4 @@
-import { TLShapePartial } from "@tldraw/tldraw";
+import { TLShapePartial } from "tldraw";
 import { Content } from "@tiptap/core";
 
 export interface Workspace {

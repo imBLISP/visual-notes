@@ -1,9 +1,9 @@
 import { EditorContent } from '@tiptap/react'
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useCallback, useMemo } from 'react'
 
 import { LinkMenu } from './components/menus/LinkMenu'
-
 import { useBlockEditor } from './useBlockEditor'
+import useBlock from '@/lib/swr/use-block'
 
 import '@/ui/editor/styles/index.css'
 
@@ -17,6 +17,7 @@ import { TiptapCollabProvider } from '@hocuspocus/provider'
 
 export const BlockEditor = ({
   initialContent,
+  readOnlyContent,
   noteId,
   aiToken,
   ydoc,
@@ -24,7 +25,8 @@ export const BlockEditor = ({
   readOnly = false,
   className
 }: {
-  initialContent: any
+  initialContent?: any
+  readOnlyContent?: any
   noteId: string | null
   aiToken?: string
   hasCollab: boolean
@@ -36,24 +38,16 @@ export const BlockEditor = ({
   const menuContainerRef = useRef(null)
 
   // fetch the intial content from database 
-  const { editor, users, collabState } = useBlockEditor({ aiToken, ydoc, provider, initialContent, noteId, readOnly, className })
-  useEffect(() => {
-    console.log("editor changed", editor)
-  }, [editor])
+  const { editor } = useBlockEditor({ aiToken, ydoc, provider, initialContent, readOnlyContent, noteId, readOnly, className})
 
 
-  if (!editor || !users || !noteId) {
+  if (!editor || !noteId) {
     return null
   }
-
 
   return (
     <div className="flex h-full" ref={menuContainerRef}>
       <div className="relative flex flex-col flex-1 h-full">
-        <EditorContent 
-          editor={editor} 
-          className="flex-1"
-        />
         {!readOnly && (
           <>
             <ContentItemMenu editor={editor} />
@@ -61,10 +55,14 @@ export const BlockEditor = ({
             <TextMenu editor={editor} />
             <ColumnsMenu editor={editor} appendTo={menuContainerRef} />
             <TableRowMenu editor={editor} appendTo={menuContainerRef} />
-            <TableColumnMenu editor={editor} appendTo={menuContainerRef} />
-            <ImageBlockMenu editor={editor} appendTo={menuContainerRef} />
+            <TableColumnMenu editor={editor} appendTo={menuContainerRef} /> 
+            <ImageBlockMenu editor={editor} appendTo={menuContainerRef} /> 
           </>
         )}
+        <EditorContent 
+          editor={editor} 
+          className="flex-1"
+        />
       </div>
     </div>
   )

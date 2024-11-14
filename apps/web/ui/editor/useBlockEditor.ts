@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState } from 'react'
 import { useEditor, useEditorState } from '@tiptap/react'
 import deepEqual from 'fast-deep-equal'
@@ -17,9 +19,11 @@ import { Content } from '@tiptap/core'
 import updateEditorContent from '@/lib/transactions/update-editor-content'
 import useBlocksStore from '@/lib/zustand/transactionQueue'
 import updateBlock from '@/lib/transactions/update-block'
-import { debounce } from 'lodash'
+import { debounce, isEqual } from 'lodash'
 import { useCallback } from 'react'
 import useBlock from '@/lib/swr/use-block'
+import useBlockSnapshot from '@/lib/swr/use-block-snapshot'
+import { uploadFile } from '@/lib/uploadThing/uploadImage'
 
 import { getContentDiff } from '@/ui/editor/lib/data/serializeOperations'
 
@@ -31,6 +35,7 @@ declare global {
 
 export const useBlockEditor = ({
   initialContent,
+  readOnlyContent,
   noteId,
   aiToken,
   ydoc,
@@ -41,6 +46,7 @@ export const useBlockEditor = ({
   className,
 }: {
   initialContent: Content;
+  readOnlyContent: Content;
   noteId: string | null;
   aiToken?: string
   ydoc: YDoc
@@ -48,118 +54,132 @@ export const useBlockEditor = ({
   userId?: string
   userName?: string
   readOnly?: boolean
-  className?: string
+  className?: string,
 }) => {
+  // HOOKS
+  // const { mutate: mutateNote, block: note, loading: noteLoading} = useBlock(noteId)
+  const { mutate: mutateSnapshot } = useBlockSnapshot(noteId)
+  const { upload, compressImage } = uploadFile();
   const [collabState, setCollabState] = useState<WebSocketStatus>(
     provider ? WebSocketStatus.Connecting : WebSocketStatus.Disconnected,
   )
 
-  const pathname = usePathname();
-  const workspaceId = pathname.split("/")[1];
-  const editorCreated = useRef(false);
-  const { mutate: mutateNote, block: note } = useBlock(noteId)
+  const updateEditorContent = async function (content: JSONContent, noteId: string | null) {
+    if (!noteId) return;
+    console.log("@useBlockEditor: note inside updateEditorContent", noteId, content);
 
-  const updateEditorContent = async (content: JSONContent) => {
-    if (!noteId || !note || readOnly) return;
-
-    const transaction = updateBlock({
-      snapshot: content
-    }, noteId)
-
-    const updatedContent = {
-      ...note,
-      snapshot: content
-    }
-
-    mutateNote(updatedContent, {
+    await mutateSnapshot(async () => {
+      const res = await fetch(`/api/blocks/${noteId}/snapshot`, {
+        method: "POST",
+        body: JSON.stringify({
+          snapshot: content
+        }),
+      })
+      console.log("@useBlockEditor: updateEditorContent: res", JSON.stringify(await res.json()));
+      return { snapshot: content }
+    }, {
+      optimisticData: { snapshot: content },
       revalidate: false,
-    })
+    });
 
-    const res = await fetch(`/api/saveTransactions`, {
-      method: "POST",
-      body: JSON.stringify(transaction),
-    })
+    // const transaction = updateBlock({
+    //   snapshot: content
+    // }, noteId)
+
+    // const updatedContent = {
+    //   ...note,
+    //   snapshot: content
+    // }
+
+    // console.log("@useBlockEditor: updateEditorContent", updatedContent);
+
+    // This is causing note title editor to show old title
+    // await mutateNote(updatedContent, {
+    //   revalidate: false,
+    // })
+
+    // const res = await fetch(`/api/saveTransactions`, {
+    //   method: "POST",
+    //   body: JSON.stringify(transaction),
+    // })
   }
 
+  // const debouncedUpdateEditorContent = debounce(updateEditorContent, 1000)
 
-  useEffect(() => {
-    if (readOnly) {
-      editor?.commands.setContent(initialContent)
-      console.log("editor content", editor?.getJSON())
-    }
-  }, [initialContent])
+  // useEffect(() => {
+  //   if (!readOnly && noteId) {
+  //     enableTransaction.current = false
+  //     editor?.commands.setContent(initialContent)
+  //     enableTransaction.current = true
+  //   }
+  // }, [noteId])
 
-  const debouncedUpdateEditorContent = useCallback(debounce(updateEditorContent, 1000), [noteId])
 
-  const editor = useEditor(
+  // useEffect(() => {
+  //   if (readOnly) {
+  //     editor?.commands.setContent(readOnlyContent)
+  //     // 
+  //   }
+  // }, [readOnlyContent])
+
+  const debouncedUpdateEditorContent = useCallback(debounce(updateEditorContent, 2000), [])
+  // 
+  const shouldShowParagraph = readOnlyContent?.content?.length == 1 && readOnlyContent?.content[0]?.type == "paragraph"
+  // console.log("@useBlockEditor: note outside", note);
+  
+  const editor =  useEditor(
     {
       immediatelyRender: true,
       shouldRerenderOnTransaction: false,
       editable: !readOnly,
       autofocus: !readOnly,
-      content: initialContent,
+      content: readOnly ? readOnlyContent : initialContent,
 
       onBeforeCreate({ editor }) {
-        // Before the view is created.
       },
       onUpdate({ editor }) {
       },
       onSelectionUpdate({ editor }) {
-        // The selection has changed.
       },
       onTransaction({ editor, transaction }) {
-        const content = editor.getJSON()
-        debouncedUpdateEditorContent(content)
+        // console.log("@useBlockEditor: onTransactionCalled");
+        if (!readOnly) {
+          const content = editor.getJSON()
+          debouncedUpdateEditorContent(content, noteId)
+        }
       },
       onFocus({ editor, event }) {
-        // The editor is focused.
       },
       onBlur({ editor, event }) {
-        // The editor isn’t focused anymore.
       },
       onDestroy() {
-        // The editor is being destroyed.
       },
       onContentError({ editor, error, disableCollaboration }) {
-        // The editor content does not match the schema.
       },
-
       onCreate: ctx => {
-        // ctx.editor.commands.
-        // console.log("editor created and this is the content", ctx.editor.getJSON())
-        // editorCreated.current = true;
-        // if (provider && !provider.isSynced) {
-        //   provider.on('synced', () => {
-        //     setTimeout(() => {
-        //       if (ctx.editor.isEmpty) {
-        //         ctx.editor.commands.setContent(initialContent)
-        //       }
-        //     }, 0)
-        //   })
-        // } else if (ctx.editor.isEmpty) {
-        //   ctx.editor.commands.setContent(initialContent)
-        //   ctx.editor.commands.focus('start', { scrollIntoView: true })
-        // }
       },
       extensions: [
         ...ExtensionKit({
-          provider,
-          readOnly,
+          provider: provider,
+          readOnly: readOnly,
+          showParagraph: shouldShowParagraph,
+          upload: upload,
+          compressImage: compressImage,
         }),
-        provider
-          ? Collaboration.configure({
-            document: ydoc,
-          })
-          : undefined,
-        provider
-          ? CollaborationCursor.configure({
-            provider,
-            user: {
-              name: randomElement(userNames),
-              color: randomElement(userColors),
-            },
-          })
-          : undefined,
+        // provider
+        //   ? Collaboration.configure({
+        //     document: ydoc,
+        //   })
+        //   : undefined,
+        // provider
+        //   ? CollaborationCursor.configure({
+        //     provider,
+        //     user: {
+        //       name: randomElement(userNames),
+        //       color: randomElement(userColors),
+        //     },
+        //   })
+        //   : undefined,
         UniqueID.configure({
           attributeName: 'uid',
           types: ['heading', 'paragraph', 'bulletList', 'orderedList', 'codeBlock', 'imageBlock', ''],
@@ -171,38 +191,14 @@ export const useBlockEditor = ({
           autocomplete: 'off',
           autocorrect: 'off',
           autocapitalize: 'off',
-          class: `min-h-full p-0 ${readOnly ? '!ml-0 !p-0' : '!ml-12'} ${className}`,
+          class: `min-h-full p-0 !py-0 ${readOnly ? '!ml-0 !p-0' : '!ml-12 !mr-12'} ${className}`,
         },
       },
     },
-    [ydoc, provider],
+    [noteId],
   )
-  const users = useEditorState({
-    editor,
-    selector: (ctx): (EditorUser & { initials: string })[] => {
-      if (!ctx.editor?.storage.collaborationCursor?.users) {
-        return []
-      }
-
-      return ctx.editor.storage.collaborationCursor.users.map((user: EditorUser) => {
-        const names = user.name?.split(' ')
-        const firstName = names?.[0]
-        const lastName = names?.[names.length - 1]
-        const initials = `${firstName?.[0] || '?'}${lastName?.[0] || '?'}`
-
-        return { ...user, initials: initials.length ? initials : '?' }
-      })
-    },
-    equalityFn: deepEqual,
-  })
-
-  useEffect(() => {
-    provider?.on('status', (event: { status: WebSocketStatus }) => {
-      setCollabState(event.status)
-    })
-  }, [provider])
 
   window.editor = editor
 
-  return { editor, users, collabState }
+  return { editor }
 }

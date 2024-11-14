@@ -49,6 +49,7 @@ import {
   TaskList,
 } from '.'
 import Paragraph from './Paragraph/Paragraph'
+import { DragHandle } from '@tiptap-pro/extension-drag-handle-react'
 
 import { ImageUpload } from './ImageUpload'
 import { TableOfContentsNode } from './TableOfContentsNode'
@@ -56,9 +57,12 @@ import { TableOfContentsNode } from './TableOfContentsNode'
 interface ExtensionKitProps {
   provider?: HocuspocusProvider | null
   readOnly?: boolean
+  showParagraph?: boolean
+  upload: (dataUrl: string, fileName: string, file : File | null) => Promise<string>
+  compressImage: (file: File | null, quality?: number, width?: number, height?: number) => Promise<unknown>
 }
 
-export const ExtensionKit = ({ provider, readOnly }: ExtensionKitProps) => [
+export const ExtensionKit = ({ provider, readOnly, showParagraph, upload, compressImage }: ExtensionKitProps) => [
   Document,
   Columns,
   TaskList,
@@ -74,6 +78,7 @@ export const ExtensionKit = ({ provider, readOnly }: ExtensionKitProps) => [
     },
   }),
   Paragraph.configure({
+    showParagraph: showParagraph == undefined ? true : showParagraph,
     HTMLAttributes: {
       class: readOnly ? '!my-0' : '!my-2',
     },
@@ -99,7 +104,7 @@ export const ExtensionKit = ({ provider, readOnly }: ExtensionKitProps) => [
   DetailsSummary,
   CodeBlock.configure({
     HTMLAttributes: {
-      class: '!m-0 p-0 !bg-stone-800',
+      class: '!m-0 p-0 !bg-[#f7f6f3] border-none !text-stone-800',
     },
   }),
   TextStyle,
@@ -121,9 +126,15 @@ export const ExtensionKit = ({ provider, readOnly }: ExtensionKitProps) => [
   ImageBlock,
   FileHandler.configure({
     allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
-    onDrop: (currentEditor, files, pos) => {
-      files.forEach(async file => {
-        const url = await API.uploadImage(file)
+    onDrop: async function (currentEditor, files, pos) {
+      files.forEach(async function (file) {
+        console.log("@FileHandler: onDrop", file)
+        const compressedImage = await compressImage(file, 0.8);
+        console.log("@FileHandler: onDrop", files, compressedImage)
+        const url = await upload(compressedImage as string, file.name, null);
+        console.log("@FileHandler: onDrop", url)
+        // const url = await API.uploadImage(file)
+        // const url = ""
 
         currentEditor.chain().setImageBlockAt({ pos, src: url }).focus().run()
       })
@@ -170,7 +181,7 @@ export const ExtensionKit = ({ provider, readOnly }: ExtensionKitProps) => [
   Dropcursor.configure({
     width: 2,
     class: 'ProseMirror-dropcursor border-black',
-  }),
+  })
 ]
 
 export default ExtensionKit

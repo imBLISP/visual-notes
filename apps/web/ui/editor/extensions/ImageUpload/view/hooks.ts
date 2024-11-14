@@ -1,15 +1,20 @@
 import { DragEvent, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { uploadFile as uploadUsingUploadThing } from '@/lib/uploadThing/uploadImage'
 import { API } from '@/ui/editor/lib/api'
 
+
 export const useUploader = ({ onUpload }: { onUpload: (url: string) => void }) => {
+  const { upload, compressImage } = uploadUsingUploadThing();
   const [loading, setLoading] = useState(false)
 
   const uploadFile = useCallback(
     async (file: File) => {
+      console.log("@useUploader: uploadFile", file)
       setLoading(true)
       try {
-        const url = await API.uploadImage(file)
+        const compressedImage = await compressImage(file, 0.8);
+        const url = await upload(compressedImage as string, file.name, null);
 
         onUpload(url)
       } catch (errPayload: any) {

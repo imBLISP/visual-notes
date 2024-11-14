@@ -31,7 +31,9 @@ import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import useWorkspace from "@/lib/swr/use-workspace";
 import useWorkspaces from "@/lib/swr/use-workspaces";
+import { uploadFile } from "@/lib/uploadThing/uploadImage";
 import updateWorkspace from "@/lib/transactions/update-workspace";
+import FormImage from "@/ui/forms/form-image";
 
 const formSchema = WorkspaceSchema.omit({
   id: true,
@@ -46,15 +48,14 @@ function EditWorkspaceModal({
 }) {
   // get workspace id from url
   const { workspaceId } = useParams();
-  const { workspace} = useWorkspace(workspaceId as string); 
+  const { workspace } = useWorkspace(workspaceId as string);
   const { mutate: mutateWorkspaces } = useWorkspaces();
-
+  const { upload } = uploadFile();
   const dialogRef = useRef(null);
   const [show, setShow] = useState(false);
   useEffect(() => {
     setShow(showEditWorkspaceModal);
   }, [showEditWorkspaceModal]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,9 +64,13 @@ function EditWorkspaceModal({
     },
   });
 
-  function onSubmit(editedWorkspace: z.infer<typeof formSchema>) {
+  async function onSubmit(editedWorkspace: z.infer<typeof formSchema>) {
     if (editedWorkspace.logo === "") {
       editedWorkspace.logo = "https://api.dicebear.com/7.x/initials/svg?backgroundType=gradientLinear&fontFamily=Helvetica&fontSize=40&seed=" + editedWorkspace.name;
+    }
+    else {
+      // upload image to uploadThing and get the url and replace logo with the url
+      editedWorkspace.logo = await upload(editedWorkspace.logo || "", 'workspace_logo.png');
     }
 
     const transaction = updateWorkspace(editedWorkspace, workspaceId as string)
@@ -81,6 +86,10 @@ function EditWorkspaceModal({
       }
     );
   }
+
+  function handleImageChange(image: string) {
+    form.setValue("logo", image);
+  };
 
   return (
     <Dialog
@@ -107,16 +116,12 @@ function EditWorkspaceModal({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 w-2/3 pb-10"
           >
-
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem className="w-full flex flex-col justify-center items-center py-2">
-                  <Avatar className="h-[100px] w-[100px]">
-                    <AvatarImage src={workspace?.logo} />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
+                  <FormImage handleImageChange={handleImageChange} />
                 </FormItem>
               )}
             />

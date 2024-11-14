@@ -11,7 +11,11 @@ import {
   Editor,
   TLUiComponents,
   TLEditorSnapshot,
-} from "@tldraw/tldraw";
+  TLUiOverrides,
+  TLUiActionsContextType,
+  TLUiToolsContextType,
+  TLAssetStore,
+} from "tldraw";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import useBlockContent from "@/lib/swr/use-block-content";
@@ -25,6 +29,8 @@ import { debounce } from "lodash";
 import updateBlock from "@/lib/transactions/update-block";
 import useBlock from "@/lib/swr/use-block";
 import { HoverNote } from "@/ui/canvas/layout/hover-note";
+import InfrontOfTheCanvas from "@/ui/canvas/layout/infront-of-canvas";
+import { uploadFile } from "@/lib/uploadThing/uploadImage";
 
 
 // const MyCustomShapes = [];
@@ -32,9 +38,7 @@ import { HoverNote } from "@/ui/canvas/layout/hover-note";
 function InfrontOfTheCanvasWrapper() {
   return (
     <>
-      <Toolbar />
-      <ContextToolbar />
-      <HoverNote />
+      <InfrontOfTheCanvas />
     </>
   );
 }
@@ -43,7 +47,6 @@ const components: TLEditorComponents = {
   InFrontOfTheCanvas: InfrontOfTheCanvasWrapper,
   Background: Background,
 };
-
 
 
 const UIcomponents: TLUiComponents = {
@@ -72,15 +75,37 @@ export default function Canvas() {
   const searchParams = useSearchParams();
   const { workspace: workspaceId } = useParams<{ workspace: string }>();
   const pageId = searchParams.get("page");
-  const { block: canvasBlock, mutate: mutateCanvasBlock } = useBlock(pageId);
+  const { block: canvasBlock, mutate: mutateCanvasBlock, loading: canvasBlockLoading } = useBlock(pageId);
   const [editor, setEditor] = useState<Editor>();
   const setAppToState = useCallback((editor: Editor) => {
     setEditor(editor);
   }, []);
+  const { upload } = uploadFile()
 
   // BLOCKS
   const { blocks, loading } = useBlockContent(pageId);
   const { enqueueTransaction } = useBlocksStore();
+
+
+  const assetStore: TLAssetStore = {
+    // [a]
+    async upload(asset, file) {
+      try {
+        const url = await upload("", file.name, file);
+        console.log("uploaded asset", url)
+        console.log("file", file)
+        return url
+      } catch (error) {
+        console.log("Error uploading asset", error)
+        return ""
+      }
+    },
+
+    // [b]
+    resolve(asset) {
+      return asset.props.src
+    },
+  }
 
   // EVENTS
   useEffect(() => {
@@ -88,16 +113,15 @@ export default function Canvas() {
 
     editor.sideEffects.registerBeforeCreateHandler("shape", (shape, source) => {
       // remove 'shape' from shape.id
-      console.log("before create shapes", shape)
 
       if (shape.meta.id) {
         return shape;
       }
 
       let updatedShape = shape
-      updatedShape = { 
-        ...shape, 
-        meta: { id: uuidv4(), noteId: "" } 
+      updatedShape = {
+        ...shape,
+        meta: { id: uuidv4(), noteId: "" }
       };
 
       if (shape.meta.noteId) {
@@ -157,7 +181,7 @@ export default function Canvas() {
         }
       }
 
-      if (shapeUpdated) {
+      if (shapeUpdated && !canvasBlockLoading) {
         const snapshot = getSnapshot(editor.store);
         saveCanvas(snapshot);
       }
@@ -179,6 +203,7 @@ export default function Canvas() {
     // Create the store
     const newStore = createTLStore({
       shapeUtils: [...defaultShapeUtils],
+      assets: assetStore,
     });
 
     const snapshot = canvasBlock?.snapshot;
@@ -194,8 +219,10 @@ export default function Canvas() {
   // NEW STORE WHEN PAGE CHANGES
   useEffect(() => {
     // Create the store
+    console.log("NEW STORE");
     const newStore = createTLStore({
       shapeUtils: [...defaultShapeUtils],
+      assets: assetStore,
     });
 
     const snapshot = canvasBlock?.snapshot;
@@ -206,7 +233,13 @@ export default function Canvas() {
     }
 
     setStore(newStore);
-  }, [pageId, canvasBlock]);
+  }, [pageId, canvasBlockLoading]);
+
+  if (canvasBlockLoading) {
+    return <div className="h-full w-full flex items-center justify-center">
+      Loading...
+    </div>
+  }
 
   return (
     <div className="h-full w-full">
@@ -215,11 +248,28 @@ export default function Canvas() {
         store={store}
         components={{ ...components, ...UIcomponents }}
         onMount={setAppToState}
+        overrides={overrides}
       >
         {/* <BlocksState /> */}
       </Tldraw>
     </div>
   );
+}
+
+const overrides: TLUiOverrides = {
+  //[a]
+  actions(_editor, actions): TLUiActionsContextType {
+    const newActions = {
+      ...actions,
+    }
+
+    return newActions
+  },
+  //[b]
+  tools(_editor, tools): TLUiToolsContextType {
+    const newTools = { ...tools }
+    return newTools
+  },
 }
 
 function getBlockIdFromShapeId(shapeId: string): string {

@@ -13,11 +13,11 @@ export const GET = async (
         snapshot: blocksTable.snapshot,
     }).from(blocksTable).where(eq(blocksTable.id, params.blockId));
 
-    return NextResponse.json(
-        BlocksSchema.pick({
+    const snapshot = BlocksSchema.pick({
             snapshot: true,
         }).parse(block[0])
-    );
+    
+    return NextResponse.json(snapshot)
 };
 
 // POST /api/blocks/:blockId/snapshot
@@ -25,8 +25,10 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: { blockId: string } }
 ) => {
+    const body = await req.json()
+
     const updateResponse = await db.update(blocksTable).set({
-        snapshot: req.body,
+        snapshot: body.snapshot,
     }).where(eq(blocksTable.id, params.blockId));
 
     return NextResponse.json(

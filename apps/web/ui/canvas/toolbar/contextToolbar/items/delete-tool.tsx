@@ -2,7 +2,7 @@
 
 import {Button} from "@repo/ui"
 import { Trash } from "lucide-react"
-import { DefaultSizeStyle, track, useEditor } from "@tldraw/tldraw";
+import { DefaultSizeStyle, track, useEditor } from "tldraw";
 
 export function DeleteTool() {
   const editor = useEditor();

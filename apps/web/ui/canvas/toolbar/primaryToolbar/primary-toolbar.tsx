@@ -4,7 +4,7 @@ import {
   useTools,
   GeoShapeGeoStyle,
   useValue,
-} from "@tldraw/tldraw";
+} from "tldraw";
 import { Select, Rectangle, Ellipse, Arrow, Draw, Line, Text } from "@/ui/icons/canvas";
 import { createElement, useState } from "react";
 import { cn } from "@repo/utils";
@@ -81,36 +81,38 @@ export function Toolbar() {
   );
 
   return (
-    <div
-      className="absolute left-[20px] p-[2px] top-[20px] rounded-sm border bg-white pointer-events-auto"
-      onPointerDown={(e) => e.stopPropagation}
-    >
-      <div className="flex flex-col gap-[2px]">
-        {tldrawTools.map((tool) => (
-          <TooltipButton
-            tooltip={tool.tooltip}
-            tooltipInfo={tool.tooltipInfo}
-            sideOffset={10}
-            side="right"
-            size="icon"
-            variant="ghost"
-            key={tool.toolId}
-            className={cn(
-              { "bg-accent": tool.toolId == currentTool.id && (tool.toolId != "geo" || tool.geoId == currentGeoId) },
-              "w-9 p-0 h-9 flex items-center justify-center rounded-sm hover:bg-accent/70"
-            )}
-            onClick={() => {
-              if (tool.toolId == "geo") {
-                editor.setStyleForNextShapes(GeoShapeGeoStyle, tool.geoId);
-                setCurrentGeoId(tool.geoId || "");
-              }
-              editor.setCurrentTool(tool.toolId);
-            }}
-          >
-            {createElement(tool.icon)}
-          </TooltipButton>
-        ))}
+    <>
+      <div
+        className="absolute left-[20px] p-[2px] top-[20px] rounded-sm border bg-white pointer-events-auto"
+        onPointerDown={(e) => e.stopPropagation}
+      >
+        <div className="flex flex-col gap-[2px]">
+          {tldrawTools.map((tool) => (
+            <TooltipButton
+              tooltip={tool.tooltip}
+              tooltipInfo={tool.tooltipInfo}
+              sideOffset={10}
+              side="right"
+              size="icon"
+              variant="ghost"
+              key={tool.toolId}
+              className={cn(
+                { "bg-accent": tool.toolId == currentTool.id && (tool.toolId != "geo" || tool.geoId == currentGeoId) },
+                "w-9 p-0 h-9 flex items-center justify-center rounded-sm hover:bg-accent/70"
+              )}
+              onClick={() => {
+                if (tool.toolId == "geo") {
+                  editor.setStyleForNextShapes(GeoShapeGeoStyle, tool.geoId);
+                  setCurrentGeoId(tool.geoId || "");
+                }
+                editor.setCurrentTool(tool.toolId);
+              }}
+            >
+              {createElement(tool.icon)}
+            </TooltipButton>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

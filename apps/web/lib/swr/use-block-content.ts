@@ -1,5 +1,4 @@
 import { Workspace, Block } from "@/lib/types";
-import {TLShapePartial} from "@tldraw/tldraw"
 import { fetcher } from "@repo/utils";
 import useSWR from "swr";
 

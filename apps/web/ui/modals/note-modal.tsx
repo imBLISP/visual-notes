@@ -1,6 +1,11 @@
 import {
     Sheet,
     SheetContent,
+    Button,
+    Breadcrumb,
+    BreadcrumbList,
+    BreadcrumbItem,
+    BreadcrumbSeparator
 } from "@repo/ui";
 import {
     Dispatch,
@@ -15,12 +20,107 @@ import {
     BlockEditor
 } from "@/ui/editor"
 import { useSearchParams } from "next/navigation";
-import useBlockContent from "@/lib/swr/use-block-content";
 import { useRouter, usePathname } from "next/navigation";
 import useBlock from "@/lib/swr/use-block";
+import useBlockNotes from "@/lib/swr/use-block-notes";
 import { ScrollArea, Separator } from "@repo/ui";
-import { useEditor } from "@tldraw/tldraw";
+import NoteTitleEditor from "@/ui/editor/layout/note-title-editor";
+import useBlockSnapshot from "@/lib/swr/use-block-snapshot";
+
 const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
+
+import { Payment, columns } from "@/ui/datatables/notes"
+import { DataTable } from "@/ui/datatables/notes"
+
+function getData(): Payment[] {
+    // Fetch data from your API here.
+    return [
+        {
+            id: "728ed52f",
+            amount: 100,
+            status: "pending",
+            email: "m@example.com",
+        },
+        {
+            id: "489e1d42",
+            amount: 125,
+            status: "processing",
+            email: "example@gmail.com",
+        },
+        {
+            id: "623a9f1b",
+            amount: 75,
+            status: "success",
+            email: "john@example.com",
+        },
+        {
+            id: "912e3d8c",
+            amount: 200,
+            status: "failed",
+            email: "sarah@example.com",
+        },
+        {
+            id: "345b7c9a",
+            amount: 150,
+            status: "pending",
+            email: "alex@example.com",
+        },
+    ]
+}
+
+
+function NoteContainer({ noteContent, noteId }: { noteContent: any; noteId: string }) {
+    console.log("@NoteContainer: noteContent", noteContent);
+    return (
+        <div className="h-full w-full">
+            <NoteTitleEditor className="text-4xl mt-11 font-bold ml-12 px-8 text-neutral-600 border-none h-full max-w-[700px] pb-6" />
+            {/* <div className="px-20 py-3">
+                <Separator />
+            </div> */}
+            <BlockEditor
+                initialContent={noteContent || []}
+                noteId={noteId}
+                ydoc={null}
+                provider={null}
+                hasCollab={false}
+            ></BlockEditor>
+        </div>
+    )
+}
+
+function NoteLoader() {
+    return (<div>Loading...</div>);
+}
+
+function AllNotesContainer({ pageId }: { pageId: string | null }) {
+    const { notes, loading } = useBlockNotes(pageId);
+    // const data = useMemo(() => notes?.map((note) => ({
+    //     id: note.id,
+    //     name: note.properties?.title,
+    //     created_at: note.created_at
+    // })), [notes])
+
+    const sortedNotes = useMemo(() => {
+        return notes?.sort((a, b) => {
+            const dateComparison = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            if (dateComparison === 0) {
+                return (a.properties?.title || "").localeCompare(b.properties?.title || "");
+            }
+            return dateComparison;
+        });
+    }, [notes]);
+
+    if (loading) return <div>Loading...</div>
+
+
+
+    // const data = getData()
+    return (
+        <div className="h-full w-full">
+            <DataTable data={sortedNotes || []} columns={columns} />
+        </div>
+    )
+}
 
 function NoteModal({
     showNoteModal,
@@ -36,19 +136,47 @@ function NoteModal({
     const pathname = usePathname();
     // get the block id from the url
     const searchParams = useSearchParams();
-    const blockId = useMemo(() => searchParams.get("blockId"), [searchParams]);
     const noteId = useMemo(() => searchParams.get("note"), [searchParams]);
+    const pageId = useMemo(() => searchParams.get("page"), [searchParams]);
+    const { snapshot, loading } = useBlockSnapshot(noteId)
+    const noteContent = snapshot
+    console.log("@NoteModal: noteContent", noteId, noteContent)
     // get the block content only once per render
     const { block: noteBlock, loading: noteLoading } = useBlock(noteId)
-    const noteContent = noteBlock?.snapshot
+    // const noteContent = noteBlock?.snapshot
+
+
+    function clearNoteParams() {
+        const params = new URLSearchParams(searchParams);
+        params.delete("note");
+        params.delete("shape");
+        router.replace(`${pathname}?${params.toString()}`);
+    }
 
     useEffect(() => {
         if (!showNoteModal) {
-            const params = new URLSearchParams(searchParams);
-            params.delete("note");
-            router.replace(`${pathname}?${params.toString()}`);
+            clearNoteParams()
         }
     }, [showNoteModal]);
+
+    // if noteid is present in url then show the note modal
+    useEffect(() => {
+        if (noteId) {
+            console.log("noteId", noteId)
+            setShowNoteModal(true)
+        }
+        else {
+            setShowNoteModal(false)
+        }
+    }, [noteId])
+
+    const onAllNotesClick = () => {
+        console.log("ALL NOTES CLICKED");
+        const params = new URLSearchParams(searchParams);
+        params.delete("note");
+        console.log(params.toString());
+        router.replace(`${pathname}?${params.toString()}`);
+    }
 
 
     return (
@@ -59,7 +187,10 @@ function NoteModal({
                 if (sheetRef.current) {
                     sheetRef.current.setAttribute("data-state", open ? "open" : "closed");
                 }
-                wait().then(() => setShowNoteModal(open));
+                    clearNoteParams()
+                wait().then(() => {
+                    // setShowNoteModal(open);
+                });
             }}
         >
             <SheetContent
@@ -73,19 +204,37 @@ function NoteModal({
                     e.preventDefault();
                 }}
             >
-                <div className="h-14 w-full border-b border-gray-200" />
+                {/* <div className="h-12 w-full border-b border-gray-200 flex items-center pl-14"> */}
+                {/* <div className="h-12 w-full flex items-center pl-14">
+                    <Breadcrumb>
+                        <BreadcrumbList className="gap-0 sm:gap-0">
+                            <BreadcrumbItem>
+                                <Button variant="ghost" className="text-muted-foreground items-center h-8" onClick={onAllNotesClick}>
+                                    All notes
+                                </Button>
+                            </BreadcrumbItem>
+                            {
+                                noteId && (
+                                    <>
+                                        <BreadcrumbSeparator>
+                                        </BreadcrumbSeparator>
+                                        <BreadcrumbItem>
+                                            <Button variant="ghost" className="text-muted-foreground items-center h-8">
+                                                {noteBlock?.properties?.title}
+                                            </Button>
+                                        </BreadcrumbItem>
+                                    </>
+                                )
+                            }
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </div> */}
                 {/* <div className="h-14 w-full" /> */}
-                <ScrollArea className="h-full">
-                    <div className="pt-6 text-4xl font-bold ml-11 px-8 text-neutral-700">Untitled</div>
-                    <Separator className="mt-6 ml-20 w-[600px]" />
-                    {noteLoading ? <div>Loading...</div> : <BlockEditor
-                        initialContent={noteContent || []}
-                        noteId={noteId}
-                        ydoc={null}
-                        provider={null}
-                        hasCollab={false}
-                    ></BlockEditor>}
-
+                <ScrollArea className="pt-6 h-full" type="always">
+                    {noteContent && noteId && !loading ?
+                        <NoteContainer noteContent={noteContent} noteId={noteId} />
+                        : <NoteLoader />
+                    }
                 </ScrollArea>
             </SheetContent>
         </Sheet>
@@ -100,7 +249,7 @@ export function useNoteModal() {
             <NoteModal
                 showNoteModal={showNoteModal}
                 setShowNoteModal={setShowNoteModal}
-                onNoteDelete={() => {}}
+                onNoteDelete={() => { }}
             />
         );
     }, [showNoteModal, setShowNoteModal]);

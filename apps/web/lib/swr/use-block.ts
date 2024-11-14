@@ -16,6 +16,6 @@ export default function useBlock(blockId: string | null) {
     block,
     error,
     loading: !block && !error,
-    mutate
+    mutate,
   };
 }

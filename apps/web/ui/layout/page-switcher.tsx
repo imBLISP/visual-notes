@@ -99,7 +99,8 @@ function AddPageButton({ switchPage }: { switchPage: (pageId: string) => void })
       content: [],
       parentId: workspaceId,
       snapshot: [],
-      active: true
+      active: true,
+      created_at: new Date(),
     }, workspaceId)
 
     const res = await fetch(`/api/saveTransactions`, {

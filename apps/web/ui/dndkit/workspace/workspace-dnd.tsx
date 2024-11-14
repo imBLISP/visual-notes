@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@repo/utils";
 import { useRouter } from "next/navigation";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui";
 interface WorkspaceProps {
   workspace: Workspace;
   isOverlay?: boolean;
@@ -86,20 +86,23 @@ export function WorkspaceCard({
           <div className="flex flex-row items-center gap-2">
             <span className="sr-only">Move task</span>
             <GripVertical size={15} />
-            <Image
-              referrerPolicy="no-referrer"
-              alt="logo of workspace"
-              src={workspace.logo + workspace.name}
-              width={35}
-              height={35}
-              className="rounded-sm "
-            ></Image>
+            <Avatar className="h-[35px] w-[35px] rounded-sm">
+              <Image
+                referrerPolicy="no-referrer"
+                alt="logo of workspace"
+                src={workspace.logo}
+                width={35}
+                height={35}
+                className="object-cover"
+                // className="rounded-sm "
+              ></Image>
+            </Avatar>
             <div className="ml-1 flex flex-col items-start justify-center">
               <div className="text-base font-normal">{workspace.name}</div>
               <div className="text-xs font-normal">Free plan . 1 member</div>
             </div>
           </div>
-          {isSelected && <Check size={15}/>}
+          {isSelected && <Check size={15} />}
         </Button>
       </div>
     </div>
