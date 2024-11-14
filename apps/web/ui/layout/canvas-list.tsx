@@ -44,6 +44,10 @@ import { TooltipButton } from "@repo/ui"
 import { v4 as uuidv4 } from 'uuid';
 import createBlock from "@/lib/transactions/create-block"
 import { useEffect } from "react"
+import deepUpdateBlock from "@/lib/transactions/deep-update-block"
+import deleteBlock from "@/lib/transactions/operations/delete"
+import { Block } from "@/lib/zod/schemas/blocks"
+import unaliveBlock from "@/lib/transactions/unalive-block"
 
 function CanvasListNote({ note }: { note: any }) {
     const searchParams = useSearchParams()
@@ -85,7 +89,9 @@ function CanvasListNote({ note }: { note: any }) {
                 {/* </CollapsibleTrigger> */}
                 {/* <CollapsibleContent> */}
                 {note.content.map((subItem: any) => (
-                    <CanvasListNote note={subItem} />
+                    <div key={subItem.id}>
+                        <CanvasListNote note={subItem} />
+                    </div>
                 ))}
                 {/* </CollapsibleContent> */}
             </SidebarMenuSubItem>
@@ -94,10 +100,10 @@ function CanvasListNote({ note }: { note: any }) {
 }
 
 interface CanvasListProps {
-    label: string;
+    type: "Favourites" | "Private";
 }
 
-export function CanvasList({ label }: CanvasListProps) {
+export function CanvasList({ type }: CanvasListProps) {
     const {
         workspaceId,
         key,
@@ -107,10 +113,15 @@ export function CanvasList({ label }: CanvasListProps) {
         key?: string;
         domain?: string;
     };
-    const { nestedBlocks } = useNestedBlocks(workspaceId)
+    let { nestedBlocks } = useNestedBlocks(workspaceId)
     const router = useRouter()
     const searchParams = useSearchParams()
     const pathname = usePathname()
+
+    // filter nested blocks if properties.favourite is true only for Favourites type
+    if (type === "Favourites") {
+      nestedBlocks = nestedBlocks?.filter((item: any) => item.properties.favourite);
+    }
 
     const createQueryString = useCallback(
         (name: string, value: string) => {
@@ -129,19 +140,21 @@ export function CanvasList({ label }: CanvasListProps) {
 
     console.log("nestedBlocksUpdated", nestedBlocks)
 
+    if (nestedBlocks?.length === 0 && type === "Favourites") return null;
+
     return (
         // <SidebarGroup className="group-data-[collapsible=icon]:hidden">
         <SidebarGroup>
             <SidebarGroupLabel>
                 <div className="w-full flex gap-2 justify-between">
-                    <div>{label}</div>
-                    <AddPageButton switchPage={switchPage} />
+                    <div>{type}</div>
+                    <AddPageButton switchPage={switchPage} type={type} />
                 </div>
             </SidebarGroupLabel>
             <SidebarMenu>
                 {nestedBlocks?.map((item, index) => (
                     <Collapsible
-                        key={item.id}
+                        key={item.id + type}
                         asChild
                         defaultOpen={false}
                         className="group/collapsible"
@@ -154,13 +167,23 @@ export function CanvasList({ label }: CanvasListProps) {
                                 <div className="w-full h-full flex items-center justify-between">
                                     <div className="flex gap-2 items-center w-full">
                                         <div className="w-full h-full hidden group-data-[collapsible=icon]:block">
-                                            <Frame className="w-4 h-4 p-0 text-gray-600 transition-transform duration-200" />
+                                            {item.properties.icon ? (
+                                                <div className="w-5 h-5 text-gray-600 flex items-center justify-center text-lg">{item.properties.icon}</div>
+                                            ) : (
+                                                <Frame className="w-4 h-4 text-gray-600" />
+                                            )}
+                                            {/* <Frame className="w-4 h-4 p-0 text-gray-600 transition-transform duration-200" /> */}
                                         </div>
                                         <CollapsibleTrigger onClick={(e) => { e.stopPropagation() }}>
                                             {/* <Frame className="w-4 h-4 text-gray-600 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 hidden group-data-[collapsible=icon]:block" /> */}
                                             <div className="relative w-4 h-4 group-data-[collapsible=icon]:hidden">
                                                 <div className="absolute inset-0 transition-all duration-100 ease-in-out opacity-100 [.icon-swap:hover_&]:opacity-0 ">
-                                                    <Frame className="w-4 h-4 text-gray-600 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                    {item.properties.icon ? (
+                                                        <div className="w-4 h-4 text-gray-600 flex items-center justify-center text-lg">{item.properties.icon}</div>
+                                                    ) : (
+                                                        <Frame className="w-4 h-4 text-gray-600" />
+                                                    )}
+                                                    {/* <Frame className="w-4 h-4 text-gray-600 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> */}
                                                 </div>
                                                 <div className="absolute inset-0 transition-all duration-100 ease-in-out opacity-0 [.icon-swap:hover_&]:opacity-100 ">
                                                     <ChevronRight className="w-4 h-4 ml-auto text-gray-600 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -171,7 +194,7 @@ export function CanvasList({ label }: CanvasListProps) {
                                     </div>
                                 </div>
                                 <div className="opacity-0 [.icon-swap:hover_&]:opacity-100 transition-opacity duration-200">
-                                    <CanvasListMore item={item} />
+                                    <CanvasListMore item={item} workspaceId={workspaceId} />
                                 </div>
                             </SidebarMenuButton>
                             {/* </div> */}
@@ -190,7 +213,41 @@ export function CanvasList({ label }: CanvasListProps) {
     );
 }
 
-function CanvasListMore({ item }: { item: any }) {
+function CanvasListMore({ item, workspaceId }: { item: any, workspaceId: string }) {
+
+    const {mutate: mutateNestedBlocks, nestedBlocks} = useNestedBlocks(workspaceId)
+
+    const handleAddToFavourites = async (itemId: string) => {
+        if (item.properties.favourite) return;
+
+        // nested block already has the item with item.id we just have to update the properties of that item not create a new one
+        const updatedNestedBlocks = nestedBlocks.map((block: Block) => {
+            if (block.id === itemId) {
+                return { ...block, properties: { ...block.properties, favourite: true } }
+            }
+            return block
+        })
+
+        const transaction = deepUpdateBlock({ favourite: true }, itemId, ["properties"])
+        mutateNestedBlocks(updatedNestedBlocks, { revalidate: false })
+        const res = await fetch(`/api/saveTransactions`, {
+            method: "POST",
+            body: JSON.stringify(transaction),
+        })
+    }
+
+    const handleDelete = async (itemId: string) => {
+        const transaction = unaliveBlock(itemId, workspaceId)
+
+        const updatedNestedBlocks = nestedBlocks.filter((block: Block) => block.id !== itemId)
+        mutateNestedBlocks(updatedNestedBlocks, { revalidate: false })
+        const res = await fetch(`/api/saveTransactions`, {
+            method: "POST",
+            body: JSON.stringify(transaction),
+        })
+        toast.success("Page deleted")
+    }
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -201,6 +258,7 @@ function CanvasListMore({ item }: { item: any }) {
             <DropdownMenuContent>
                 <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
+                    handleAddToFavourites(item.id);
                     // Handle delete
                 }}>
                     <Star className="w-4 h-4 mr-2" />
@@ -222,6 +280,7 @@ function CanvasListMore({ item }: { item: any }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
+                    handleDelete(item.id);
                     // Handle delete
                 }}>
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -232,7 +291,7 @@ function CanvasListMore({ item }: { item: any }) {
     )
 }
 
-function AddPageButton({ switchPage }: { switchPage: (pageId: string) => void }) {
+function AddPageButton({ switchPage, type }: { switchPage: (pageId: string) => void, type: "Favourites" | "Private" }) {
     // call create page api add empty content with title as new page
     // mutate useworkspace blocks  
     // reroute to the new page 
@@ -247,6 +306,7 @@ function AddPageButton({ switchPage }: { switchPage: (pageId: string) => void })
             type: "canvas",
             properties: {
                 title: "New page",
+                favourite: type === "Favourites",
             },
             content: [],
             parentId: workspaceId,

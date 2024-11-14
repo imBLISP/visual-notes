@@ -333,7 +333,8 @@ export default function Sidebar({ children }: SidebarProps) {
         </SidebarHeader>
         <SidebarContent>
           <ScrollArea type="always">
-            <CanvasList label="Private"/>
+            <CanvasList type="Favourites"/>
+            <CanvasList type="Private"/>
             {/* <SidebarGroup>
             <SidebarGroupLabel>Favourites</SidebarGroupLabel>
             <SidebarMenu>

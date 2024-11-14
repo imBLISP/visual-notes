@@ -7,6 +7,7 @@ export const BlockPropertiesSchema = z.object({
     icon: z.string().optional().describe("The icon of the block."),
     x: z.number().optional().describe("The x coordinate of the block."),
     y: z.number().optional().describe("The y coordinate of the block."),
+    favourite: z.boolean().optional().describe("Whether the block is a favourite.").default(false),
     meta: z.object({
         id: z.string().uuid()
     }).optional().describe("The meta data of the block."),

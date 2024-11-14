@@ -41,6 +41,7 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --epr-emoji-size: 15px !important;
   }
 
   .dark {
@@ -76,6 +77,8 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    /* --epr-emoji-size: 15px !important; */
+    /* --epr-emoji-fullsize: 1rem; */
   }
 }
 

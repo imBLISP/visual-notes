@@ -31,6 +31,7 @@ const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
 
 import { Payment, columns } from "@/ui/datatables/notes"
 import { DataTable } from "@/ui/datatables/notes"
+import { ImageIcon } from "lucide-react";
 
 function getData(): Payment[] {
     // Fetch data from your API here.
@@ -73,7 +74,19 @@ function NoteContainer({ noteContent, noteId }: { noteContent: any; noteId: stri
     console.log("@NoteContainer: noteContent", noteContent);
     return (
         <div className="h-full w-full">
-            <NoteTitleEditor className="text-4xl mt-11 font-bold ml-12 px-8 text-neutral-600 border-none h-full max-w-[700px] pb-6" />
+            <div className="flex flex-col group">
+                <div className="w-full ml-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" className="font-normal text-sm text-muted-foreground hover:text-muted-foreground p-1 items-center">
+                        <div className="flex items-center justify-center">
+                            <ImageIcon className="mr-2 h-4 w-4" /> 
+                            <div>
+                                Add cover
+                            </div>
+                        </div>
+                    </Button>
+                </div>
+                <NoteTitleEditor className="text-4xl font-bold ml-12 px-8 text-neutral-600 border-none h-full max-w-[700px] pb-6" />
+            </div>
             {/* <div className="px-20 py-3">
                 <Separator />
             </div> */}
