@@ -3,7 +3,8 @@
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+import { X, ChevronsRight } from "lucide-react"
+import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "./resizable"
 
 import { cn } from "@repo/utils"
 
@@ -59,17 +60,23 @@ const SheetContent = React.forwardRef<
 >(({ side = "right", className, children, ...props }, ref) => (
   <SheetPortal>
     {/* <SheetOverlay /> */}
+    <ResizablePanelGroup direction="horizontal">
+      <div></div>
+      <ResizableHandle />
+    <ResizablePanel>
     <SheetPrimitive.Content
       ref={ref}
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
+      <SheetPrimitive.Close className="absolute left-6 top-[14px] rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+        <ChevronsRight className="h-5 w-5 text-neutral-500" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
     </SheetPrimitive.Content>
+    </ResizablePanel>
+    </ResizablePanelGroup>
   </SheetPortal>
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
