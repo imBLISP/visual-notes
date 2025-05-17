@@ -166,11 +166,11 @@ function NoteModal({
         router.replace(`${pathname}?${params.toString()}`);
     }
 
-    useEffect(() => {
-        if (!showNoteModal) {
-            clearNoteParams()
-        }
-    }, [showNoteModal]);
+    // useEffect(() => {
+    //     if (!showNoteModal) {
+    //         clearNoteParams()
+    //     }
+    // }, [showNoteModal]);
 
     // if noteid is present in url then show the note modal
     useEffect(() => {
@@ -181,7 +181,7 @@ function NoteModal({
         else {
             setShowNoteModal(false)
         }
-    }, [noteId])
+    }, [noteId, setShowNoteModal])
 
     const onAllNotesClick = () => {
         console.log("ALL NOTES CLICKED");
@@ -197,13 +197,13 @@ function NoteModal({
             modal={false}
             open={showNoteModal}
             onOpenChange={(open) => {
-                if (sheetRef.current) {
-                    sheetRef.current.setAttribute("data-state", open ? "open" : "closed");
-                }
+                // if (sheetRef.current) {
+                //     sheetRef.current.setAttribute("data-state", open ? "open" : "closed");
+                // }
                     clearNoteParams()
-                wait().then(() => {
-                    // setShowNoteModal(open);
-                });
+                // wait().then(() => {
+                //     // setShowNoteModal(open);
+                // });
             }}
         >
             <SheetContent

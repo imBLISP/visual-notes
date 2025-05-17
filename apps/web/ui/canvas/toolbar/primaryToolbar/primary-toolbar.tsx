@@ -83,7 +83,7 @@ export function Toolbar() {
   return (
     <>
       <div
-        className="absolute left-[20px] p-[2px] top-[20px] rounded-sm border bg-white pointer-events-auto"
+        className="absolute left-[20px] p-[4px] top-[20px] rounded-md bg-container-background pointer-events-auto"
         onPointerDown={(e) => e.stopPropagation}
       >
         <div className="flex flex-col gap-[2px]">
@@ -97,8 +97,8 @@ export function Toolbar() {
               variant="ghost"
               key={tool.toolId}
               className={cn(
-                { "bg-accent": tool.toolId == currentTool.id && (tool.toolId != "geo" || tool.geoId == currentGeoId) },
-                "w-9 p-0 h-9 flex items-center justify-center rounded-sm hover:bg-accent/70"
+                { "bg-white border border-border": tool.toolId == currentTool.id && (tool.toolId != "geo" || tool.geoId == currentGeoId) },
+                "w-9 p-0 h-9 flex items-center justify-center rounded-lg hover:bg-white"
               )}
               onClick={() => {
                 if (tool.toolId == "geo") {

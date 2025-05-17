@@ -24,14 +24,15 @@ import _ from "lodash";
 import { v4 as uuidv4, validate as validateUuid } from "uuid";
 import { ContextToolbar } from "@/ui/canvas/toolbar/contextToolbar/context-toolbar";
 import { Toolbar } from "@/ui/canvas/toolbar/primaryToolbar/primary-toolbar";
-import { Background } from "@/ui/canvas/backgrounds/background"
+import { Background } from "@/ui/canvas/backgrounds/background";
 import { debounce } from "lodash";
 import updateBlock from "@/lib/transactions/update-block";
 import useBlock from "@/lib/swr/use-block";
 import { HoverNote } from "@/ui/canvas/layout/hover-note";
 import InfrontOfTheCanvas from "@/ui/canvas/layout/infront-of-canvas";
 import { uploadFile } from "@/lib/uploadThing/uploadImage";
-
+import { Excalidraw } from "@excalidraw/excalidraw";
+import "@excalidraw/excalidraw/index.css";
 
 // const MyCustomShapes = [];
 
@@ -47,7 +48,6 @@ const components: TLEditorComponents = {
   InFrontOfTheCanvas: InfrontOfTheCanvasWrapper,
   Background: Background,
 };
-
 
 const UIcomponents: TLUiComponents = {
   ContextMenu: null,
@@ -69,43 +69,46 @@ const UIcomponents: TLUiComponents = {
   MenuPanel: null,
   TopPanel: null,
   // CursorChatBubble: null,
-}
+};
 
 export default function Canvas() {
   const searchParams = useSearchParams();
   const { workspace: workspaceId } = useParams<{ workspace: string }>();
   const pageId = searchParams.get("page");
-  const { block: canvasBlock, mutate: mutateCanvasBlock, loading: canvasBlockLoading } = useBlock(pageId);
+  const {
+    block: canvasBlock,
+    mutate: mutateCanvasBlock,
+    loading: canvasBlockLoading,
+  } = useBlock(pageId);
   const [editor, setEditor] = useState<Editor>();
   const setAppToState = useCallback((editor: Editor) => {
     setEditor(editor);
   }, []);
-  const { upload } = uploadFile()
+  const { upload } = uploadFile();
 
   // BLOCKS
   const { blocks, loading } = useBlockContent(pageId);
   const { enqueueTransaction } = useBlocksStore();
-
 
   const assetStore: TLAssetStore = {
     // [a]
     async upload(asset, file) {
       try {
         const url = await upload("", file.name, file);
-        console.log("uploaded asset", url)
-        console.log("file", file)
-        return url
+        console.log("uploaded asset", url);
+        console.log("file", file);
+        return url;
       } catch (error) {
-        console.log("Error uploading asset", error)
-        return ""
+        console.log("Error uploading asset", error);
+        return "";
       }
     },
 
     // [b]
     resolve(asset) {
-      return asset.props.src
+      return asset.props.src;
     },
-  }
+  };
 
   // EVENTS
   useEffect(() => {
@@ -118,10 +121,10 @@ export default function Canvas() {
         return shape;
       }
 
-      let updatedShape = shape
+      let updatedShape = shape;
       updatedShape = {
         ...shape,
-        meta: { id: uuidv4(), noteId: "" }
+        meta: { id: uuidv4(), noteId: "" },
       };
 
       if (shape.meta.noteId) {
@@ -129,36 +132,42 @@ export default function Canvas() {
           ...shape,
           props: {
             ...shape.props,
-            text: shape.meta.noteId
-          }
-        }
+            text: shape.meta.noteId,
+          },
+        };
       }
 
-      return updatedShape
+      return updatedShape;
     });
 
     const saveCanvas = debounce(async (snapshot: TLEditorSnapshot) => {
       if (!pageId) return;
       if (!canvasBlock) return;
 
-      const transaction = updateBlock({
-        snapshot: snapshot,
-      }, pageId);
+      const transaction = updateBlock(
+        {
+          snapshot: snapshot,
+        },
+        pageId
+      );
 
-      mutateCanvasBlock({
-        ...canvasBlock,
-        snapshot: snapshot,
-      }, { revalidate: false });
+      mutateCanvasBlock(
+        {
+          ...canvasBlock,
+          snapshot: snapshot,
+        },
+        { revalidate: false }
+      );
 
       const res = await fetch(`/api/saveTransactions`, {
         method: "POST",
         body: JSON.stringify(transaction),
-      })
+      });
     }, 1000);
 
     //[1]
     const handleChangeEvent: TLEventMapHandler<"change"> = (change) => {
-      let shapeUpdated = false
+      let shapeUpdated = false;
 
       // Added
       for (const record of Object.values(change.changes.added)) {
@@ -236,9 +245,11 @@ export default function Canvas() {
   }, [pageId, canvasBlockLoading]);
 
   if (canvasBlockLoading) {
-    return <div className="h-full w-full flex items-center justify-center">
-      Loading...
-    </div>
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -250,8 +261,19 @@ export default function Canvas() {
         onMount={setAppToState}
         overrides={overrides}
       >
-        {/* <BlocksState /> */}
       </Tldraw>
+      {/* <Excalidraw
+        // onChange={(change, appState, files) =>
+        //   console.log("VINLOGS: change", change, appState, files)
+        // }
+        onPointerDown={() =>
+          console.log("VINLOGS: pointer down")
+        }
+        // store={store}
+        // components={{ ...components, ...UIcomponents }}
+        // onMount={setAppToState}
+        // overrides={overrides}
+      /> */}
     </div>
   );
 }
@@ -261,20 +283,20 @@ const overrides: TLUiOverrides = {
   actions(_editor, actions): TLUiActionsContextType {
     const newActions = {
       ...actions,
-    }
+    };
 
-    return newActions
+    return newActions;
   },
   //[b]
   tools(_editor, tools): TLUiToolsContextType {
-    const newTools = { ...tools }
-    return newTools
+    const newTools = { ...tools };
+    return newTools;
   },
-}
+};
 
 function getBlockIdFromShapeId(shapeId: string): string {
   const blockId = shapeId.split("shape:")[1];
   return blockId || "";
 }
 
-function initShapes(editor: Editor) { }
+function initShapes(editor: Editor) {}
