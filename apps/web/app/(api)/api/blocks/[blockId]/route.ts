@@ -5,10 +5,8 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/blocks/:blockId
-export const GET = async (
-  req: NextRequest,
-  { params }: { params: { blockId: string } }
-) => {
+export const GET = async (req: NextRequest, props: { params: Promise<{ blockId: string }> }) => {
+  const params = await props.params;
   if (!params.blockId || params.blockId == "null") {
     return NextResponse.json({ error: "Block ID is required" }, { status: 400 });
   }
@@ -21,10 +19,8 @@ export const GET = async (
 };
 
 // POST /api/blocks/:blockId
-export const POST = async (
-  req: NextRequest,
-  { params }: { params: { blockId: string } }
-) => {
+export const POST = async (req: NextRequest, props: { params: Promise<{ blockId: string }> }) => {
+  const params = await props.params;
   const blockData = BlocksSchema.parse(req.body)
 
   // update block
@@ -34,10 +30,8 @@ export const POST = async (
 };
 
 // DELETE /api/blocks/:blockId
-export const DELETE = async (
-  req: NextRequest,
-  { params }: { params: { blockId: string } }
-) => {
+export const DELETE = async (req: NextRequest, props: { params: Promise<{ blockId: string }> }) => {
+  const params = await props.params;
   const block = await db.delete(blocksTable).where(eq(blocksTable.id, params.blockId));
 
   return NextResponse.json(block);

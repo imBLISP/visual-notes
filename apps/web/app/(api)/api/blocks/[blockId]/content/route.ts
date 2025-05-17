@@ -4,10 +4,8 @@ import { BlocksSchema } from "@/lib/zod";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async (
-  req: NextRequest,
-  { params }: { params: { blockId: string } }
-) => {
+export const GET = async (req: NextRequest, props: { params: Promise<{ blockId: string }> }) => {
+  const params = await props.params;
   if (!params.blockId || params.blockId == "null") {
     return NextResponse.json({ error: "Block ID is required" }, { status: 400 });
   }

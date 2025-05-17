@@ -5,7 +5,8 @@ import { eq, inArray, and } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/workspaces/:workspaceId/blocks
-export const GET = async (req: NextRequest, { params }: { params: { workspaceId: string } }) => {
+export const GET = async (req: NextRequest, props: { params: Promise<{ workspaceId: string }> }) => {
+    const params = await props.params;
     const workspace = await db.select({
         content: workspacesTable.content,
     }).from(workspacesTable).where(eq(workspacesTable.id, params.workspaceId));

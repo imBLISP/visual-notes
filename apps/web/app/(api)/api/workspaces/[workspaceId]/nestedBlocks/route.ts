@@ -5,10 +5,8 @@ import { eq, sql } from "drizzle-orm";
 import { uuid } from "drizzle-orm/pg-core";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async (
-    req: NextRequest,
-    { params }: { params: { workspaceId: string } }
-) => {
+export const GET = async (req: NextRequest, props: { params: Promise<{ workspaceId: string }> }) => {
+    const params = await props.params;
 
     const nestedBlocks = await db.execute(sql`
       WITH RECURSIVE nested_blocks AS (

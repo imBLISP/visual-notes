@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -95,13 +95,13 @@
     "lodash": "^4.17.21",
     "lowlight": "^3.1.0",
     "lucide-react": "^0.407.0",
-    "next": "14.2.5",
+    "next": "15.3.2",
     "novel": "^0.4.3",
     "postcss": "^8.4.40",
     "postgres": "^3.4.4",
-    "react": "^18.3.1",
+    "react": "19.1.0",
     "react-colorful": "^5.6.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "19.1.0",
     "react-hook-form": "^7.52.1",
     "react-hot-toast": "^2.4.1",
     "slate": "^0.103.0",
@@ -137,15 +137,21 @@
     "@storybook/test": "^8.2.7",
     "@tailwindcss/postcss": "^4.1.7",
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "19.1.4",
+    "@types/react-dom": "19.1.5",
     "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.22.8",
     "eslint": "^8",
-    "eslint-config-next": "15.0.0-rc.0",
+    "eslint-config-next": "15.3.2",
     "eslint-plugin-storybook": "^0.8.0",
     "storybook": "^8.2.7",
     "tailwindcss": "^4.1.7",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.1.4",
+      "@types/react-dom": "19.1.5"
+    }
   }
 }

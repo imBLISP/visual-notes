@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, type JSX } from 'react';
 import deepEql from 'fast-deep-equal'
 import { BubbleMenu as BaseBubbleMenu, useEditorState } from '@tiptap/react'
 
